@@ -30,16 +30,12 @@ namespace Paint
         Point _start;
         Point _end;
 
-        List<UIElement> _list = new List<UIElement>();
         List<IShape> _shapes = new List<IShape>();
-        UIElement _lastElement = null;
 
         List<IShape> _painters = new List<IShape>();
         IShape _painter = null;
 
-        List<string> icons = new List<string>();
-
-        ColorToBrushConverter _colorToBrush = new ColorToBrushConverter();
+        List<string> _brushes = new();
 
         public PaintWindow()
         {
@@ -68,7 +64,19 @@ namespace Paint
             
             shapeGallery.ItemsSource = _shapes;
             strokeColorGallery.SelectedColor = Colors.Black;
-            fillColorGallery.SelectedColor = Colors.Black;
+            fillColorGallery.SelectedColor = Colors.Transparent;
+
+            //Add stroke brushes
+            _brushes.Add("");
+            _brushes.Add("1");
+            _brushes.Add("1 6");
+            _brushes.Add("6 1");
+            _brushes.Add("0.25 1");
+            _brushes.Add("4 1 1 1 1 1");
+            _brushes.Add("5, 5, 1, 5");
+            _brushes.Add("1 2 4");
+
+            brushGallery.ItemsSource = _brushes;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -123,6 +131,26 @@ namespace Paint
 
             // Close the dropdown
             shapeGallery.IsDropDownOpen = false;
+
+            // Handle the click event
+            e.Handled = true;
+        }
+
+        private void brushGallery_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void brushGallery_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Get the clicked item
+            var clickedItem = (e.OriginalSource as FrameworkElement)?.DataContext;
+
+            // Select the clicked item
+            brushGallery.SelectedItem = clickedItem;
+
+            // Close the dropdown
+            brushGallery.IsDropDownOpen = false;
 
             // Handle the click event
             e.Handled = true;

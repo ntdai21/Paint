@@ -25,24 +25,26 @@
                     <Fluent:InRibbonGallery x:Name="shapeGallery" MinItemsInRow="3" MaxItemsInRow="6" ItemWidth="64" ItemHeight="64" SelectionChanged="shapeGallery_SelectionChanged" PreviewMouseLeftButtonDown="ItemGallery_PreviewMouseLeftButtonDown">
                         <Fluent:InRibbonGallery.ItemTemplate>
                             <DataTemplate>
-                                <Fluent:GalleryItem>
-                                    <Image Source="{Binding ThumbnailPath}"/>
-                                </Fluent:GalleryItem>
+                                <Image Source="{Binding ThumbnailPath}"/>
                             </DataTemplate>
                         </Fluent:InRibbonGallery.ItemTemplate>
                     </Fluent:InRibbonGallery>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Outline Settings">
-                    <Fluent:DropDownButton Header="Brush" Icon="/Icons/paint-brush.png">
-
-                    </Fluent:DropDownButton>
+                    <Fluent:InRibbonGallery x:Name="brushGallery" MaxItemsInRow="1" ItemWidth="200" ItemHeight="20" SelectionChanged="brushGallery_SelectionChanged" PreviewMouseLeftButtonDown="brushGallery_PreviewMouseLeftButtonDown">
+                        <Fluent:InRibbonGallery.ItemTemplate>
+                            <DataTemplate>
+                                <Rectangle StrokeThickness="10" Margin="5 0 5 0" StrokeDashArray="{Binding}" Fill="Transparent" Stroke="Black" Height="2"/>
+                            </DataTemplate>
+                        </Fluent:InRibbonGallery.ItemTemplate>
+                    </Fluent:InRibbonGallery>
                     <Fluent:DropDownButton Header="Thickness" Icon="/Icons/width.png">
                         <DockPanel Margin="5">
                             <TextBlock DockPanel.Dock="Left" Margin="0 0 10 0">
                                 <Run Text="{Binding ElementName=outlineThicknessSlider, Path=Value}"/>
                                 <Run Text="px"/>
                             </TextBlock>
-                            <Slider Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="outlineThicknessSlider" DockPanel.Dock="Right" Width="200"/>
+                            <Slider Minimum="0" Maximum="10" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="outlineThicknessSlider" DockPanel.Dock="Right" Width="200"/>
                         </DockPanel>
                     </Fluent:DropDownButton>
                     <Fluent:DropDownButton Header="Color">
