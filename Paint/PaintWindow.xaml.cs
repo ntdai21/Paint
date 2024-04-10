@@ -36,6 +36,7 @@ namespace Paint
         IShape _painter = null;
 
         List<string> _brushes = new();
+        DoubleCollection _brush;
 
         public PaintWindow()
         {
@@ -84,9 +85,11 @@ namespace Paint
             if (_painter == null) return;
             _isDrawing = true;
             _start = e.GetPosition(canvas);
+
             _painter.StrokeColor = strokeColorGallery.SelectedColor ?? Colors.Transparent;
             _painter.FillColor = fillColorGallery.SelectedColor ?? Colors.Transparent;
             _painter.StrokeThickness = outlineThicknessSlider.Value;
+            _painter.StrokeDashArray = _brush;
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
@@ -138,7 +141,10 @@ namespace Paint
 
         private void brushGallery_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var converter = new DoubleCollectionConverter();
+            string item = (string)brushGallery.SelectedItem;
 
+            _brush = (DoubleCollection)converter.ConvertFromString(item);
         }
 
         private void brushGallery_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

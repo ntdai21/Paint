@@ -35,7 +35,8 @@ namespace MyLines
                 X2 = _endPoint.X,
                 Y2 = _endPoint.Y,
                 StrokeThickness = StrokeThickness,
-                Stroke = new SolidColorBrush(StrokeColor)
+                Stroke = new SolidColorBrush(StrokeColor),
+                StrokeDashArray = StrokeDashArray
             };
         }
 
@@ -51,6 +52,7 @@ namespace MyLines
         public double StrokeThickness { get; set; }
         public string StrokeBrush { get; set; }
         public Color FillColor { get; set; }
+        public DoubleCollection StrokeDashArray { get; set; }
     }
 
 }

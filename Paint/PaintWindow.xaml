@@ -34,7 +34,7 @@
                     <Fluent:InRibbonGallery x:Name="brushGallery" MaxItemsInRow="1" ItemWidth="200" ItemHeight="20" SelectionChanged="brushGallery_SelectionChanged" PreviewMouseLeftButtonDown="brushGallery_PreviewMouseLeftButtonDown">
                         <Fluent:InRibbonGallery.ItemTemplate>
                             <DataTemplate>
-                                <Rectangle StrokeThickness="10" Margin="5 0 5 0" StrokeDashArray="{Binding}" Fill="Transparent" Stroke="Black" Height="2"/>
+                                <Line StrokeThickness="{Binding ElementName=outlineThicknessSlider, Path=Value}" Margin="5 0 5 0" StrokeDashArray="{Binding}" Fill="Transparent" Stroke="Black" X2="190" Y1="10" Y2="10"/>
                             </DataTemplate>
                         </Fluent:InRibbonGallery.ItemTemplate>
                     </Fluent:InRibbonGallery>

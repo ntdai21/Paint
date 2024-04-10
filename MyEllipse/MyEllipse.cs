@@ -38,6 +38,7 @@ namespace MyEllipse
                 Stroke = new SolidColorBrush(StrokeColor),
                 StrokeThickness = StrokeThickness,
                 Fill = new SolidColorBrush(FillColor),
+                StrokeDashArray = StrokeDashArray
             };
             Canvas.SetLeft(ellipse, Math.Min(_end.X, _start.X));
             Canvas.SetTop(ellipse, Math.Min(_end.Y, _start.Y));
@@ -55,5 +56,6 @@ namespace MyEllipse
         public double StrokeThickness { get; set; }
         public string StrokeBrush { get; set; }
         public Color FillColor { get; set; }
+        public DoubleCollection StrokeDashArray { get; set; }
     }
 }

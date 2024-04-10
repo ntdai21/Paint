@@ -16,5 +16,6 @@ namespace Shapes
         public double StrokeThickness { get; set; }
         public string StrokeBrush {  get; set; }
         public Color FillColor {  get; set; }
+        public DoubleCollection StrokeDashArray { get; set; }
     }
 }

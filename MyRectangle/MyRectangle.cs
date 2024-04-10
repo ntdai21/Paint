@@ -45,6 +45,7 @@ namespace MyRectangle
                 Stroke = new SolidColorBrush(StrokeColor),
                 StrokeThickness = StrokeThickness,
                 Fill = new SolidColorBrush(FillColor),
+                StrokeDashArray = StrokeDashArray
             };
             Canvas.SetLeft(rectangle, Math.Min(_end.X, _start.X));
             Canvas.SetTop(rectangle, Math.Min(_end.Y, _start.Y));
@@ -55,6 +56,7 @@ namespace MyRectangle
         public double StrokeThickness { get; set; }
         public string StrokeBrush { get; set; }
         public Color FillColor { get; set; }
+        public DoubleCollection StrokeDashArray { get; set; }
     }
 
 
