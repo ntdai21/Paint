@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Icons\paint-brush.png" />
+    <None Remove="Icons\rectangle.png" />
+    <None Remove="Icons\width.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fluent.Ribbon" Version="10.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IShape\IShape.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\paint-brush.png" />
+    <Resource Include="Icons\rectangle.png" />
+    <Resource Include="Icons\width.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Windows\" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(SolutionDir)\MyRectangle\bin\Debug\net8.0-windows\MyRectangle.dll&quot; &quot;$(OutDir)&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\MyLine\bin\Debug\net8.0-windows\MyLine.dll&quot; &quot;$(OutDir)&quot;" />
+  </Target>
+</Project>

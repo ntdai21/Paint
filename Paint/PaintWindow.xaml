@@ -1,0 +1,70 @@
+﻿<Fluent:RibbonWindow x:Class="Paint.PaintWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
+        xmlns:local="clr-namespace:Paint"
+                     xmlns:converter="clr-namespace:Paint.Converters"
+        mc:Ignorable="d" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen"
+        Title="PaintWindow" Height="450" Width="800">
+    <Fluent:RibbonWindow.Resources>
+        <converter:ColorToBrushConverter x:Key="colorToBrushConverter"/>
+    </Fluent:RibbonWindow.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Fluent:Ribbon>
+            <Fluent:Ribbon.Menu>
+                <Fluent:Backstage Header="File"></Fluent:Backstage>
+            </Fluent:Ribbon.Menu>
+            <Fluent:RibbonTabItem Header="Draw">
+                <Fluent:RibbonGroupBox Header="Shapes">
+                    <Fluent:InRibbonGallery x:Name="shapeGallery" MinItemsInRow="3" MaxItemsInRow="6" ItemWidth="64" ItemHeight="64" SelectionChanged="shapeGallery_SelectionChanged" PreviewMouseLeftButtonDown="ItemGallery_PreviewMouseLeftButtonDown">
+                        <Fluent:InRibbonGallery.ItemTemplate>
+                            <DataTemplate>
+                                <Fluent:GalleryItem>
+                                    <Image Source="{Binding ThumbnailPath}"/>
+                                </Fluent:GalleryItem>
+                            </DataTemplate>
+                        </Fluent:InRibbonGallery.ItemTemplate>
+                    </Fluent:InRibbonGallery>
+                </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox Header="Outline Settings">
+                    <Fluent:DropDownButton Header="Brush" Icon="/Icons/paint-brush.png">
+
+                    </Fluent:DropDownButton>
+                    <Fluent:DropDownButton Header="Thickness" Icon="/Icons/width.png">
+                        <DockPanel Margin="5">
+                            <TextBlock DockPanel.Dock="Left" Margin="0 0 10 0">
+                                <Run Text="{Binding ElementName=outlineThicknessSlider, Path=Value}"/>
+                                <Run Text="px"/>
+                            </TextBlock>
+                            <Slider Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="outlineThicknessSlider" DockPanel.Dock="Right" Width="200"/>
+                        </DockPanel>
+                    </Fluent:DropDownButton>
+                    <Fluent:DropDownButton Header="Color">
+                        <Fluent:DropDownButton.Icon>
+                            <Ellipse Fill="{Binding ElementName=strokeColorGallery, Path=SelectedColor, Converter={StaticResource colorToBrushConverter}}"/>
+                        </Fluent:DropDownButton.Icon>
+                        <Fluent:ColorGallery Mode="ThemeColors" x:Name="strokeColorGallery" SelectedColor="Black"/>
+                    </Fluent:DropDownButton>
+                </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox Header="Fill Settings">
+                    <Fluent:DropDownButton Header="Color">
+                        <Fluent:DropDownButton.Icon>
+                            <Ellipse Fill="{Binding ElementName=fillColorGallery, Path=SelectedColor, Converter={StaticResource colorToBrushConverter}}"/>
+                        </Fluent:DropDownButton.Icon>
+                        <Fluent:ColorGallery Mode="ThemeColors" x:Name="fillColorGallery" SelectedColor="Black"/>
+                    </Fluent:DropDownButton>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+        </Fluent:Ribbon>
+        <Canvas x:Name="canvas" Grid.Row="1"/>
+        <Canvas Grid.Row="1" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
+            
+        </Canvas>
+    </Grid>
+</Fluent:RibbonWindow>
