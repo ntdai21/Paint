@@ -67,6 +67,8 @@ namespace Paint
             }
             
             shapeGallery.ItemsSource = _shapes;
+            strokeColorGallery.SelectedColor = Colors.Black;
+            fillColorGallery.SelectedColor = Colors.Black;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
