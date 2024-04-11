@@ -116,6 +116,10 @@ namespace Paint
                 _painter.AddSecond(_end);
                 canvas.Children.Add(_painter.Convert());
             }
+            else if (cursorToggle.IsChecked == true)
+            {
+
+            }
         }
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -129,6 +133,7 @@ namespace Paint
         {
             IShape item = (IShape)shapeGallery.SelectedItem;
             _painter = item;
+            cursorToggle.IsChecked = false;
         }
 
         private void ItemGallery_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -203,6 +208,13 @@ namespace Paint
             scrollViewer.Cursor = Cursors.Arrow;
             scrollViewer.ReleaseMouseCapture();
             lastDragPoint = null;
+        }
+
+        private void cursorToggle_Click(object sender, RoutedEventArgs e)
+        {
+            shapeGallery.SelectedItem = null;
+            _painter = null;
+            cursorToggle.IsChecked = true;
         }
     }
 

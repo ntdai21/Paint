@@ -35,6 +35,7 @@
                     <Fluent:Button Icon="/Icons/flip-vertical.png" SizeDefinition="Small" ToolTip="Flip Vertical"/>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Shapes">
+                    <Fluent:ToggleButton x:Name="cursorToggle" Header="Select" Icon="/Icons/mouse-cursor.png" Click="cursorToggle_Click" IsChecked="True"/>
                     <Fluent:InRibbonGallery x:Name="shapeGallery" MinItemsInRow="3" MaxItemsInRow="6" ItemWidth="64" ItemHeight="64" SelectionChanged="shapeGallery_SelectionChanged" PreviewMouseLeftButtonDown="ItemGallery_PreviewMouseLeftButtonDown">
                         <Fluent:InRibbonGallery.ItemTemplate>
                             <DataTemplate>
@@ -80,9 +81,6 @@
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
-
-
-
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" x:Name="scrollViewer">
             <Grid>
                 <Grid.LayoutTransform>
@@ -93,7 +91,6 @@
                 <Canvas Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp"/>
             </Grid>
         </ScrollViewer>
-
         <Fluent:StatusBar Grid.Row="2">
             <Fluent:StatusBarItem HorizontalAlignment="Left" Margin="10 5 10 5">
                 <StackPanel Orientation="Horizontal">
