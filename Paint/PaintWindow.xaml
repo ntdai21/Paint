@@ -10,6 +10,7 @@
         Title="PaintWindow" Height="450" Width="800">
     <Fluent:RibbonWindow.Resources>
         <converter:ColorToBrushConverter x:Key="colorToBrushConverter"/>
+        <converter:DoubleToPercentageConverter x:Key="doubleToPercentageConverter"/>
     </Fluent:RibbonWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -79,19 +80,25 @@
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
-        <Canvas x:Name="canvas" Grid.Row="1"/>
-        <Canvas Grid.Row="1" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
-            
-        </Canvas>
+
+
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" x:Name="scrollViewer">
+            <Grid>
+                <Grid.LayoutTransform>
+                    <ScaleTransform ScaleX="{Binding ElementName=zoomSlider, Path=Value}" ScaleY="{Binding ElementName=zoomSlider, Path=Value}"/>
+                </Grid.LayoutTransform>
+                <Rectangle Fill="Transparent" Width="1280" Height="720"/>
+                <Canvas x:Name="canvas"/>
+                <Canvas Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp"/>
+            </Grid>
+        </ScrollViewer>
+
         <Fluent:StatusBar Grid.Row="2">
-            <Fluent:StatusBarItem Title="Left placed item" HorizontalAlignment="Left" Margin="10 5 10 5">
+            <Fluent:StatusBarItem HorizontalAlignment="Left" Margin="10 5 10 5">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Margin="0 0 5 0">
-                        <Run Text="Zoom"/>
-                        <Run d:Text="100" Text="{Binding ElementName=zoomSlider, Path=Value}" FontWeight="SemiBold"/>
-                        <Run Text="%"/>
-                    </TextBlock>
-                    <Slider Minimum="25" Maximum="200" Value="100" IsSnapToTickEnabled="True" TickFrequency="25" x:Name="zoomSlider" Width="200"/>
+                    <TextBlock Text="{Binding ElementName=zoomSlider, Path=Value, Converter={StaticResource doubleToPercentageConverter}}" Margin="0 0 5 0"/>
+                    <Slider Minimum="0.25" Maximum="5.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.25" x:Name="zoomSlider" Width="200"/>
                 </StackPanel>
             </Fluent:StatusBarItem>
         </Fluent:StatusBar>

@@ -2,6 +2,7 @@
 using Paint.Converters;
 using Shapes;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -79,6 +80,11 @@ namespace Paint
 
             brushGallery.ItemsSource = _brushes;
             brushGallery.SelectedIndex = 0;
+
+            scrollViewer.PreviewMouseRightButtonUp += ScrollViwer_OnMouseRightButtonUp;
+            scrollViewer.MouseRightButtonUp += ScrollViwer_OnMouseRightButtonUp;
+            scrollViewer.PreviewMouseRightButtonDown += ScrollViewer_OnMouseRightButtonDown;
+            scrollViewer.MouseMove += ScrollViewer_OnMouseMove;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -162,5 +168,42 @@ namespace Paint
             // Handle the click event
             e.Handled = true;
         }
+
+        Point? lastDragPoint;
+
+        void ScrollViewer_OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (lastDragPoint.HasValue)
+            {
+                Point posNow = e.GetPosition(scrollViewer);
+
+                double dX = posNow.X - lastDragPoint.Value.X;
+                double dY = posNow.Y - lastDragPoint.Value.Y;
+
+                lastDragPoint = posNow;
+
+                scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - dX);
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - dY);
+            }
+        }
+        void ScrollViewer_OnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var mousePos = e.GetPosition(scrollViewer);
+            if (mousePos.X <= scrollViewer.ViewportWidth && mousePos.Y <
+                scrollViewer.ViewportHeight) //make sure we still can use the scrollbars
+            {
+                scrollViewer.Cursor = Cursors.SizeAll;
+                lastDragPoint = mousePos;
+                Mouse.Capture(scrollViewer);
+            }
+        }
+
+        void ScrollViwer_OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            scrollViewer.Cursor = Cursors.Arrow;
+            scrollViewer.ReleaseMouseCapture();
+            lastDragPoint = null;
+        }
     }
+
 }
