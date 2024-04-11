@@ -15,12 +15,24 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Fluent:Ribbon>
             <Fluent:Ribbon.Menu>
                 <Fluent:Backstage Header="File"></Fluent:Backstage>
             </Fluent:Ribbon.Menu>
             <Fluent:RibbonTabItem Header="Draw">
+                <Fluent:RibbonGroupBox Header="Commands">
+                    <Fluent:Button Icon="/Icons/save.png" Header="Save"/>
+                    <Fluent:Button Icon="/Icons/undo.png" SizeDefinition="Small" ToolTip="Undo"/>
+                    <Fluent:Button Icon="/Icons/redo.png" SizeDefinition="Small"  ToolTip="Redo"/>
+                    <Fluent:Button SizeDefinition="Small" Visibility="Hidden"/>
+                    <Fluent:Button Icon="/Icons/copy.png" SizeDefinition="Small" ToolTip="Copy"/>
+                    <Fluent:Button Icon="/Icons/cut.png" SizeDefinition="Small" ToolTip="Cut"/>
+                    <Fluent:Button Icon="/Icons/paste.png" SizeDefinition="Small" ToolTip="Paste"/>
+                    <Fluent:Button Icon="/Icons/flip-horizontal.png" SizeDefinition="Small" ToolTip="Flip Horizontal"/>
+                    <Fluent:Button Icon="/Icons/flip-vertical.png" SizeDefinition="Small" ToolTip="Flip Vertical"/>
+                </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Shapes">
                     <Fluent:InRibbonGallery x:Name="shapeGallery" MinItemsInRow="3" MaxItemsInRow="6" ItemWidth="64" ItemHeight="64" SelectionChanged="shapeGallery_SelectionChanged" PreviewMouseLeftButtonDown="ItemGallery_PreviewMouseLeftButtonDown">
                         <Fluent:InRibbonGallery.ItemTemplate>
@@ -30,21 +42,21 @@
                         </Fluent:InRibbonGallery.ItemTemplate>
                     </Fluent:InRibbonGallery>
                 </Fluent:RibbonGroupBox>
-                <Fluent:RibbonGroupBox Header="Outline Settings">
+                <Fluent:RibbonGroupBox Header="Stroke Settings">
                     <Fluent:InRibbonGallery x:Name="brushGallery" MaxItemsInRow="1" ItemWidth="200" ItemHeight="20" SelectionChanged="brushGallery_SelectionChanged" PreviewMouseLeftButtonDown="brushGallery_PreviewMouseLeftButtonDown">
                         <Fluent:InRibbonGallery.ItemTemplate>
                             <DataTemplate>
-                                <Line StrokeThickness="{Binding ElementName=outlineThicknessSlider, Path=Value}" Margin="5 0 5 0" StrokeDashArray="{Binding}" Fill="Transparent" Stroke="Black" X2="190" Y1="10" Y2="10"/>
+                                <Line StrokeThickness="{Binding ElementName=strokeThicknessSlider, Path=Value}" Margin="5 0 5 0" StrokeDashArray="{Binding}" Fill="Transparent" Stroke="Black" X2="190" Y1="10" Y2="10"/>
                             </DataTemplate>
                         </Fluent:InRibbonGallery.ItemTemplate>
                     </Fluent:InRibbonGallery>
                     <Fluent:DropDownButton Header="Thickness" Icon="/Icons/width.png">
                         <DockPanel Margin="5">
                             <TextBlock DockPanel.Dock="Left" Margin="0 0 10 0">
-                                <Run Text="{Binding ElementName=outlineThicknessSlider, Path=Value}"/>
+                                <Run Text="{Binding ElementName=strokeThicknessSlider, Path=Value}"/>
                                 <Run Text="px"/>
                             </TextBlock>
-                            <Slider Minimum="0" Maximum="10" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="outlineThicknessSlider" DockPanel.Dock="Right" Width="200"/>
+                            <Slider Minimum="0" Maximum="10" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="strokeThicknessSlider" DockPanel.Dock="Right" Width="200"/>
                         </DockPanel>
                     </Fluent:DropDownButton>
                     <Fluent:DropDownButton Header="Color">
@@ -62,11 +74,26 @@
                         <Fluent:ColorGallery Mode="ThemeColors" x:Name="fillColorGallery" SelectedColor="Black"/>
                     </Fluent:DropDownButton>
                 </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox Header="Tools">
+                    <Fluent:Button Header="Add Image" Icon="/Icons/add-image.png"/>
+                </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
         <Canvas x:Name="canvas" Grid.Row="1"/>
         <Canvas Grid.Row="1" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
             
         </Canvas>
+        <Fluent:StatusBar Grid.Row="2">
+            <Fluent:StatusBarItem Title="Left placed item" HorizontalAlignment="Left" Margin="10 5 10 5">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Margin="0 0 5 0">
+                        <Run Text="Zoom"/>
+                        <Run d:Text="100" Text="{Binding ElementName=zoomSlider, Path=Value}" FontWeight="SemiBold"/>
+                        <Run Text="%"/>
+                    </TextBlock>
+                    <Slider Minimum="25" Maximum="200" Value="100" IsSnapToTickEnabled="True" TickFrequency="25" x:Name="zoomSlider" Width="200"/>
+                </StackPanel>
+            </Fluent:StatusBarItem>
+        </Fluent:StatusBar>
     </Grid>
 </Fluent:RibbonWindow>

@@ -78,6 +78,7 @@ namespace Paint
             _brushes.Add("1 2 4");
 
             brushGallery.ItemsSource = _brushes;
+            brushGallery.SelectedIndex = 0;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -88,7 +89,7 @@ namespace Paint
 
             _painter.StrokeColor = strokeColorGallery.SelectedColor ?? Colors.Transparent;
             _painter.FillColor = fillColorGallery.SelectedColor ?? Colors.Transparent;
-            _painter.StrokeThickness = outlineThicknessSlider.Value;
+            _painter.StrokeThickness = strokeThicknessSlider.Value;
             _painter.StrokeDashArray = _brush;
         }
 
