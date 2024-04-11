@@ -4,6 +4,7 @@ using Shapes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace Paint
     /// <summary>
     /// Interaction logic for PaintWindow.xaml
     /// </summary>
-    public partial class PaintWindow : RibbonWindow
+    public partial class PaintWindow : RibbonWindow, INotifyPropertyChanged
     {
         bool _isDrawing = false;
         Point _start;
@@ -38,6 +39,9 @@ namespace Paint
 
         List<string> _brushes = new();
         DoubleCollection _brush;
+
+        public int CanvasWidth { get; set; } = 2000;
+        public int CanvasHeight { get; set; } = 2000;
 
         public PaintWindow()
         {
