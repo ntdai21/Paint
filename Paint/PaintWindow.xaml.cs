@@ -1,4 +1,5 @@
-﻿using Fluent;
+﻿using Contract;
+using Fluent;
 using Paint.Converters;
 using Shapes;
 using System;
@@ -29,6 +30,12 @@ namespace Paint
         bool _isDrawing = false;
         Point _start;
         Point _end;
+
+        List<IShape> _selectedShapes = new List<IShape>();
+        bool _isEdit = false;
+        List<ControlPoint> _currentControlPointList = new List<ControlPoint>();
+        int _selectedControlPointIndex = -1;
+        Point _currentCursor = new Point(-1, -1);
 
         List<IShape> _shapes = new List<IShape>();
 
@@ -62,7 +69,7 @@ namespace Paint
                     }
                 }
             }
-            
+
             shapeGallery.ItemsSource = _shapes;
             strokeColorGallery.SelectedColor = Colors.Black;
             fillColorGallery.SelectedColor = Colors.Transparent;
@@ -80,16 +87,112 @@ namespace Paint
             brushGallery.ItemsSource = _brushes;
         }
 
+        private void RenderCanvas()
+        {
+            canvas.Children.Clear();
+
+            foreach (IShape i in _painters)
+            {
+                canvas.Children.Add(i.Convert());
+            }
+
+            if (_isEdit && _selectedShapes.Count > 0)
+            {
+                foreach (IShape shape in _selectedShapes)
+                {
+                    BorderShape cur = (BorderShape)shape;
+                    canvas.Children.Add(cur.RenderBorder());
+
+                    if (_selectedShapes.Count == 1)
+                    {
+                        List<ControlPoint> controlPoints = cur.GetControlPointList();
+                        _currentControlPointList = controlPoints;
+
+                        foreach (ControlPoint controlPoint in controlPoints)
+                        {
+                            canvas.Children.Add(controlPoint.Render(cur.RotateAngle, cur.GetCenterPoint()));
+                        }
+
+                    }
+                }
+            }
+
+        }
+
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (_painter == null) return;
-            _isDrawing = true;
-            _start = e.GetPosition(canvas);
 
-            _painter.StrokeColor = strokeColorGallery.SelectedColor ?? Colors.Transparent;
-            _painter.FillColor = fillColorGallery.SelectedColor ?? Colors.Transparent;
-            _painter.StrokeThickness = outlineThicknessSlider.Value;
-            _painter.StrokeDashArray = _brush;
+            if (!_isEdit)
+            {
+                //Draw
+                _isDrawing = true;
+                _start = e.GetPosition(canvas);
+
+                _painter.StrokeColor = strokeColorGallery.SelectedColor ?? Colors.Transparent;
+                _painter.FillColor = fillColorGallery.SelectedColor ?? Colors.Transparent;
+                _painter.StrokeThickness = outlineThicknessSlider.Value;
+                _painter.StrokeDashArray = _brush;
+            }
+
+
+            if (_isEdit)
+            {
+                //When edit mode
+                Point cursor = e.GetPosition(canvas);
+                _currentCursor = cursor;
+
+                //Logic for choose a shape
+                for (int i = 0; i < _painters.Count; i++)
+                {
+                    BorderShape current = (BorderShape)_painters[i];
+                    if (current.IsHovering(cursor.X, cursor.Y))
+                    {
+                        // hold ctrl to select multiple object
+                        if (Keyboard.IsKeyDown(Key.LeftCtrl))
+                        {
+                            if (!_selectedShapes.Contains(_painters[i]))
+                            {
+                                _selectedShapes.Add(_painters[i]);
+                            }
+                            else
+                            {
+                                _selectedShapes.Remove(_painters[i]);
+                            }
+
+                        }
+                        else
+                        {
+                            //no hold ctrl to drop all and select one
+                            _selectedShapes.Clear();
+                            _selectedShapes.Add(_painters[i]);
+                            _currentControlPointList = current.GetControlPointList();
+                        }
+                        RenderCanvas();
+                    }
+
+                }
+
+                //Logic for choosing control point of single shape
+                if (_selectedShapes.Count == 1)
+                {
+                    BorderShape selected = (BorderShape)_selectedShapes[0];
+                    if (_currentControlPointList.Count > 0)
+                    {
+                        for (int i = 0; i < _currentControlPointList.Count; i++)
+                        {
+                            if (_currentControlPointList[i].IsHovering(selected.RotateAngle, cursor.X, cursor.Y))
+                            {
+                                _selectedControlPointIndex = i;
+                                break;
+                            }
+                        }
+                    }
+
+                }
+
+
+            }
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
@@ -109,13 +212,110 @@ namespace Paint
                 _painter.AddSecond(_end);
                 canvas.Children.Add(_painter.Convert());
             }
+
+            if (_isEdit)
+            {
+                if (_selectedShapes.Count < 1 || (Mouse.LeftButton != MouseButtonState.Pressed))
+                {
+                    return;
+                }
+
+                if (_selectedShapes.Count > 1)
+                {
+                    //Handle multiple move
+                    double deltaX, deltaY;
+                    Point newCursor = e.GetPosition(canvas);
+
+                    deltaX = newCursor.X - _currentCursor.X;
+                    deltaY = newCursor.Y - _currentCursor.Y;
+
+
+                    foreach (BorderShape s in _selectedShapes)
+                    {
+                        if (true)
+                        {
+                            Point leftTop = s.LeftTop;
+                            Point rightBottom = s.RightBottom;
+
+                            leftTop.X += deltaX;
+                            leftTop.Y += deltaY;
+                            rightBottom.X += deltaX;
+                            rightBottom.Y += deltaY;
+
+                            s.LeftTop = leftTop;
+                            s.RightBottom = rightBottom;
+                        }
+
+
+                    }
+
+                    RenderCanvas();
+
+
+                    _currentCursor = newCursor;
+                }
+                else
+                {
+                    //Handle edit single shape
+                    BorderShape shape = (BorderShape)_selectedShapes[0];
+
+                    if (_selectedControlPointIndex != -1)
+                    {
+                        _currentControlPointList[_selectedControlPointIndex].controlPointStrategy.HandleMouseMove(ref shape, e, canvas);
+
+                        RenderCanvas();
+                    }
+                    else
+                    {
+                        //Handle move single shape
+                        double deltaX, deltaY;
+                        Point newCursor = e.GetPosition(canvas);
+
+                        deltaX = newCursor.X - _currentCursor.X;
+                        deltaY = newCursor.Y - _currentCursor.Y;
+
+                        if (_selectedShapes.Count > 0)
+                        {
+                            foreach (BorderShape s in _selectedShapes)
+                            {
+                                if (s.IsHovering(newCursor.X, newCursor.Y))
+                                {
+                                    Point leftTop = s.LeftTop;
+                                    Point rightBottom = s.RightBottom;
+
+                                    leftTop.X += deltaX;
+                                    leftTop.Y += deltaY;
+                                    rightBottom.X += deltaX;
+                                    rightBottom.Y += deltaY;
+
+                                    s.LeftTop = leftTop;
+                                    s.RightBottom = rightBottom;
+                                }
+                            }
+
+                            RenderCanvas();
+                        }
+
+                        _currentCursor = newCursor;
+                    }
+                }
+            }
         }
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (!_isDrawing) return;
-            _isDrawing = false;
-            _painters.Add((IShape)_painter.Clone());
+            if (_isEdit)
+            {
+                _selectedControlPointIndex = -1;
+            }
+            if (_isDrawing)
+            {
+                _isDrawing = false;
+                _painters.Add((IShape)_painter.Clone());
+                _selectedControlPointIndex = -1;
+            }
+
+
         }
 
         private void shapeGallery_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -160,6 +360,11 @@ namespace Paint
 
             // Handle the click event
             e.Handled = true;
+        }
+
+        private void ChangeMode_Click(object sender, RoutedEventArgs e)
+        {
+            _isEdit = !_isEdit;
         }
     }
 }

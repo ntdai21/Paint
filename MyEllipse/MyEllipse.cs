@@ -5,21 +5,22 @@ using System.Windows.Shapes;
 using System.Windows;
 using Shapes;
 using System.Xml.Linq;
+using Contract;
 
 namespace MyEllipse
 {
-    class MyEllipse : IShape
+    class MyEllipse : BorderShape, IShape
     {
         Point _start;
         Point _end;
         public void AddFirst(Point pt)
         {
-            _start = pt;
+            LeftTop = pt;
         }
 
         public void AddSecond(Point pt)
         {
-            _end = pt;
+            RightBottom = pt;
         }
 
         public object Clone()
@@ -31,6 +32,7 @@ namespace MyEllipse
 
         public UIElement Convert()
         {
+            _start = LeftTop; _end=RightBottom;
             UIElement ellipse = new Ellipse()
             {
                 Width = Math.Abs(_end.X - _start.X),

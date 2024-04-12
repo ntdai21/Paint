@@ -4,10 +4,11 @@ using System.Windows.Shapes;
 using System.Windows;
 using Shapes;
 using System.Xml.Linq;
+using Contract;
 
 namespace MyLines
 {
-    public class MyLine : IShape
+    public class MyLine : BorderShape, IShape
     {
         Point _startPoint;
         Point _endPoint;
@@ -28,7 +29,7 @@ namespace MyLines
 
         public UIElement Convert()
         {
-            return new Line()
+            Line line= new Line()
             {
                 X1 = _startPoint.X,
                 Y1 = _startPoint.Y,
@@ -38,6 +39,43 @@ namespace MyLines
                 Stroke = new SolidColorBrush(StrokeColor),
                 StrokeDashArray = StrokeDashArray
             };
+
+            RotateTransform transform = new(RotateAngle);
+            line.RenderTransform=transform;
+            return line;
+        }
+
+        override public List<ControlPoint> GetControlPointList()
+        {
+            List<ControlPoint> controlPoints = new List<ControlPoint>();
+
+            ControlPoint start=new LinePoint() {Position=_startPoint,CenterPoint=GetCenterPoint(),Edge="leftTop", controlPointStrategy = new LineControlPointStrategy(_startPoint) };
+
+            ControlPoint end = new LinePoint() { Position = _endPoint, CenterPoint = GetCenterPoint(), Edge = "rightBottom", controlPointStrategy = new LineControlPointStrategy(_startPoint) };
+            controlPoints.Add(start);
+            controlPoints.Add(end);
+            return controlPoints;
+        }
+
+        public override UIElement RenderBorder()
+        {
+            var line = new Line()
+            {
+                X1 = _startPoint.X,
+                Y1 = _startPoint.Y,
+                X2 = _endPoint.X,
+                Y2 = _endPoint.Y,
+                StrokeThickness = StrokeThickness,
+                Stroke = new SolidColorBrush(StrokeColor),
+                StrokeDashArray = StrokeDashArray
+            };
+
+            RotateTransform rotateTransform = new(RotateAngle);
+            rotateTransform.CenterX = Math.Abs(_startPoint.X - _endPoint.X);
+            rotateTransform.CenterY=Math.Abs(_startPoint.Y - _endPoint.Y);
+            line.RenderTransform=rotateTransform;
+
+            return line;
         }
 
         public string ThumbnailPath

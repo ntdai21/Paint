@@ -12,6 +12,7 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Contract\Contract.csproj" />
 		<ProjectReference Include="..\IShape\IShape.csproj" />
 	</ItemGroup>
 

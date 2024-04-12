@@ -28,8 +28,10 @@ namespace Paint
         }
 
         bool _isDrawing = false;
+        bool _isEdit = true;
         Point _start;
         Point _end;
+
 
         List<UIElement> _list = new List<UIElement>();
         List<IShape> shapes = new List<IShape>();
@@ -81,6 +83,7 @@ namespace Paint
         {
             _isDrawing = true;
             _start = e.GetPosition(myCanvas);
+
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
@@ -106,6 +109,13 @@ namespace Paint
         {
             _isDrawing = false;
             _painters.Add((IShape)_painter.Clone());
+
+            if(_isEdit)
+            {
+                Point current=e.GetPosition(myCanvas);
+
+
+            }
         }
         
     }
