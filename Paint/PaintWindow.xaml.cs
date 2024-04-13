@@ -42,7 +42,8 @@ namespace Paint
         List<IShape> _copyBuffer = new List<IShape>();
         Stack<List<IShape>> _undoStack = new Stack<List<IShape>>();
         Stack<List<IShape>> _redoStack = new Stack<List<IShape>>();
-        bool isChange = false;
+        bool isChange = false; //expand, rotate, move,...
+        bool _isChangeProperty = false; //color,thickness,...
 
         List<IShape> _shapes = new List<IShape>();
 
@@ -266,8 +267,9 @@ namespace Paint
 
             if (_isEdit)
             {
-                if (_selectedShapes.Count < 1 || (Mouse.LeftButton != MouseButtonState.Pressed))
+                if (_selectedShapes.Count < 1 || (Mouse.LeftButton != MouseButtonState.Pressed) || _isChangeProperty == true)
                 {
+                    _isChangeProperty = false;
                     return;
                 }
 
@@ -310,12 +312,13 @@ namespace Paint
                 else
                 {
                     //Handle edit single shape
-                    isChange = true;
+                    //isChange = true;
 
                     BorderShape shape = (BorderShape)_selectedShapes[0];
 
                     if (_selectedControlPointIndex != -1)
                     {
+                        isChange = true;
                         _currentControlPointList[_selectedControlPointIndex].controlPointStrategy.HandleMouseMove(ref shape, e, canvas);
 
                         RenderCanvas();
@@ -413,6 +416,19 @@ namespace Paint
             string item = (string)brushGallery.SelectedItem;
 
             _brush = (DoubleCollection)converter.ConvertFromString(item);
+
+            if (_isEdit)
+            {
+                _isChangeProperty = true;
+
+                foreach (var shape in _selectedShapes)
+                {
+                    shape.StrokeDashArray = (DoubleCollection)converter.ConvertFromString(item);
+                }
+
+                AddToUndo(_painters);
+                RenderCanvas();
+            }
         }
 
         private void brushGallery_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -433,14 +449,20 @@ namespace Paint
 
         private void ChangeMode_Click(object sender, RoutedEventArgs e)
         {
-            /*
-            if (_isEdit == false)
-            {
-                AddToUndo(_painters);
 
-            }
-            */
             _isEdit = !_isEdit;
+
+            if (_isEdit == true)
+            {
+                cursorToggle.IsChecked = true;
+            }
+            else
+            {
+                cursorToggle.IsChecked = false;
+                _selectedControlPointIndex = -1;
+                _selectedShapes.Clear();
+                RenderCanvas();
+            }
         }
 
         private void HandleCopyEvent()
@@ -667,6 +689,63 @@ namespace Paint
             cursorToggle.IsChecked = true;
         }
 
+        private void strokeThicknessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (_isEdit && _selectedShapes.Count>0)
+            {
+                _isChangeProperty = true;
+
+
+                foreach (var shape in _selectedShapes)
+                {
+                    shape.StrokeThickness = strokeThicknessSlider.Value;
+                }
+
+                AddToUndo(_painters);
+
+                RenderCanvas();
+            }
+        }
+
+        private void strokeColorGallery_SelectedColorChanged(object sender, RoutedEventArgs e)
+        {
+            Color? selectedColor = strokeColorGallery.SelectedColor;
+
+            if (_isEdit && selectedColor.HasValue && _selectedShapes.Count>0)
+            {
+                _isChangeProperty = true;
+
+
+                foreach (var shape in _selectedShapes)
+                {
+                    shape.StrokeColor = (Color)selectedColor;
+                }
+
+                AddToUndo(_painters);
+
+                RenderCanvas();
+            }
+        }
+
+        private void fillColorGallery_SelectedColorChanged(object sender, RoutedEventArgs e)
+        {
+            Color? selectedColor = fillColorGallery.SelectedColor;
+
+            if (_isEdit && selectedColor.HasValue && _selectedShapes.Count>0)
+            {
+                _isChangeProperty = true;
+
+
+                foreach (var shape in _selectedShapes)
+                {
+                    shape.FillColor = (Color)selectedColor;
+                }
+
+                AddToUndo(_painters);
+
+                RenderCanvas();
+            }
+        }
     }
 
 }
