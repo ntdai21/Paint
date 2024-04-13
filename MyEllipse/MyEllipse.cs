@@ -6,19 +6,19 @@ using System.Windows;
 using Shapes;
 using System.Xml.Linq;
 using Contract;
+using System.Drawing;
 
 namespace MyEllipse
 {
     class MyEllipse : BorderShape, IShape
     {
-        Point _start;
-        Point _end;
-        public void AddFirst(Point pt)
+
+        public void AddFirst(System.Windows.Point pt)
         {
             LeftTop = pt;
         }
 
-        public void AddSecond(Point pt)
+        public void AddSecond(System.Windows.Point pt)
         {
             RightBottom = pt;
         }
@@ -32,7 +32,8 @@ namespace MyEllipse
 
         public UIElement Convert()
         {
-            _start = LeftTop; _end=RightBottom;
+            System.Windows.Point _start = LeftTop;
+            System.Windows.Point _end = RightBottom;
             UIElement ellipse = new Ellipse()
             {
                 Width = Math.Abs(_end.X - _start.X),
@@ -42,8 +43,15 @@ namespace MyEllipse
                 Fill = new SolidColorBrush(FillColor),
                 StrokeDashArray = StrokeDashArray
             };
+            RotateTransform transform = new RotateTransform(RotateAngle);
+            transform.CenterX = Math.Abs(_end.X - _start.X) * 1.0 / 2;
+            transform.CenterY = Math.Abs(_end.Y - _start.Y) * 1.0 / 2;
+
             Canvas.SetLeft(ellipse, Math.Min(_end.X, _start.X));
             Canvas.SetTop(ellipse, Math.Min(_end.Y, _start.Y));
+
+            ellipse.RenderTransform = transform;
+
             return ellipse;
         }
         public string ThumbnailPath
@@ -54,10 +62,10 @@ namespace MyEllipse
             }
         }
 
-        public Color StrokeColor { get; set; }
+        public System.Windows.Media.Color StrokeColor { get; set; }
         public double StrokeThickness { get; set; }
         public string StrokeBrush { get; set; }
-        public Color FillColor { get; set; }
+        public System.Windows.Media.Color FillColor { get; set; }
         public DoubleCollection StrokeDashArray { get; set; }
     }
 }

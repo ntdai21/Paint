@@ -8,7 +8,7 @@ using System.Windows.Data;
 
 namespace Paint.Converters
 {
-    class DoubleToPercentageConverter : IValueConverter
+    public class DoubleToPercentageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

@@ -11,8 +11,7 @@ namespace MyRectangle
 {
     class MyRectangle : BorderShape, IShape
     {
-        Point _start;
-        Point _end;
+
         public void AddFirst(Point pt)
         {
             LeftTop = pt;
@@ -40,7 +39,8 @@ namespace MyRectangle
 
         public UIElement Convert()
         {
-            _start=LeftTop; _end=RightBottom;
+            Point _start = LeftTop;
+            Point _end = RightBottom;
             UIElement rectangle = new Rectangle()
             {
                 Width = Math.Abs(_end.X - _start.X),

@@ -10,16 +10,15 @@ namespace MyLines
 {
     public class MyLine : BorderShape, IShape
     {
-        Point _startPoint;
-        Point _endPoint;
+
         public void AddFirst(Point pt)
         {
-            _startPoint = pt;
+            LeftTop = pt;
         }
         public string Name => "Line";
         public void AddSecond(Point pt)
         {
-            _endPoint = pt;
+            RightBottom = pt;
         }
 
         public object Clone()
@@ -29,6 +28,8 @@ namespace MyLines
 
         public UIElement Convert()
         {
+            Point _startPoint = LeftTop;
+            Point _endPoint = RightBottom;
             Line line= new Line()
             {
                 X1 = _startPoint.X,
@@ -47,11 +48,13 @@ namespace MyLines
 
         override public List<ControlPoint> GetControlPointList()
         {
+            Point _startPoint = LeftTop;
+            Point _endPoint = RightBottom;
             List<ControlPoint> controlPoints = new List<ControlPoint>();
 
             ControlPoint start=new LinePoint() {Position=_startPoint,CenterPoint=GetCenterPoint(),Edge="leftTop", controlPointStrategy = new LineControlPointStrategy(_startPoint) };
 
-            ControlPoint end = new LinePoint() { Position = _endPoint, CenterPoint = GetCenterPoint(), Edge = "rightBottom", controlPointStrategy = new LineControlPointStrategy(_startPoint) };
+            ControlPoint end = new LinePoint() { Position = _endPoint, CenterPoint = GetCenterPoint(), Edge = "rightBottom", controlPointStrategy = new LineControlPointStrategy(_endPoint) };
             controlPoints.Add(start);
             controlPoints.Add(end);
             return controlPoints;
@@ -59,6 +62,8 @@ namespace MyLines
 
         public override UIElement RenderBorder()
         {
+            Point _startPoint = LeftTop;
+            Point _endPoint = RightBottom;
             var line = new Line()
             {
                 X1 = _startPoint.X,

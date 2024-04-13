@@ -157,7 +157,7 @@ namespace Paint
 
                 _painter.StrokeColor = strokeColorGallery.SelectedColor ?? Colors.Transparent;
                 _painter.FillColor = fillColorGallery.SelectedColor ?? Colors.Transparent;
-                _painter.StrokeThickness = outlineThicknessSlider.Value;
+                _painter.StrokeThickness = strokeThicknessSlider.Value;
                 _painter.StrokeDashArray = _brush;
             }
 
@@ -258,9 +258,9 @@ namespace Paint
                 _painter.AddSecond(_end);
                 canvas.Children.Add(_painter.Convert());
             }
-             else if (cursorToggle.IsChecked == true)
+            else if (cursorToggle.IsChecked == true)
             {
-              
+
             }
 
 
@@ -364,13 +364,13 @@ namespace Paint
         {
             if (_isEdit)
             {
-                
+
                 if (isChange == true)
                 {
                     AddToUndo(_painters);
                     isChange = false;
                 }
-                
+
                 _selectedControlPointIndex = -1;
             }
             if (_isDrawing)
@@ -550,13 +550,13 @@ namespace Paint
         {
             if (true)
             {
-                if(_redoStack.Count > 0)
+                if (_redoStack.Count > 0)
                 {
-                List<IShape> last = _redoStack.Pop();
-                AddToUndo(last);
-                _painters = last;
-                _selectedShapes.Clear();
-                RenderCanvas();
+                    List<IShape> last = _redoStack.Pop();
+                    AddToUndo(last);
+                    _painters = last;
+                    _selectedShapes.Clear();
+                    RenderCanvas();
 
                 }
             }

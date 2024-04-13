@@ -10,7 +10,7 @@ using static System.Resources.ResXFileRef;
 
 namespace Paint.Converters
 {
-    internal class ColorToBrushConverter : IValueConverter
+    public class ColorToBrushConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
