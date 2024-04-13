@@ -62,7 +62,7 @@
                     </Fluent:DropDownButton>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Shapes">
-                    <Fluent:ToggleButton x:Name="cursorToggle" Header="Select" Icon="/Icons/mouse-cursor.png" Click="cursorToggle_Click" IsChecked="True"/>
+                    <Fluent:ToggleButton x:Name="cursorToggle" Header="Select" Icon="/Icons/mouse-cursor.png" Click="ChangeMode_Click" IsChecked="False"/>
                     <Fluent:InRibbonGallery x:Name="shapeGallery" MinItemsInRow="3" MaxItemsInRow="6" ItemWidth="64" ItemHeight="64" SelectionChanged="shapeGallery_SelectionChanged" PreviewMouseLeftButtonDown="ItemGallery_PreviewMouseLeftButtonDown">
                         <Fluent:InRibbonGallery.ItemTemplate>
                             <DataTemplate>
@@ -79,20 +79,20 @@
                             </DataTemplate>
                         </Fluent:InRibbonGallery.ItemTemplate>
                     </Fluent:InRibbonGallery>
-                    <Fluent:DropDownButton Header="Thickness" Icon="/Icons/width.png">
+                    <Fluent:DropDownButton Header="Thickness" Icon="/Icons/width.png" >
                         <DockPanel Margin="5">
                             <TextBlock DockPanel.Dock="Left" Margin="0 0 10 0">
                                 <Run Text="{Binding ElementName=strokeThicknessSlider, Path=Value}"/>
                                 <Run Text="px"/>
                             </TextBlock>
-                            <Slider Minimum="0" Maximum="10" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="strokeThicknessSlider" DockPanel.Dock="Right" Width="200"/>
+                            <Slider Minimum="0" Maximum="10" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="strokeThicknessSlider" DockPanel.Dock="Right" Width="200" ValueChanged="strokeThicknessSlider_ValueChanged"/>
                         </DockPanel>
                     </Fluent:DropDownButton>
                     <Fluent:DropDownButton Header="Color">
                         <Fluent:DropDownButton.Icon>
                             <Ellipse Fill="{Binding ElementName=strokeColorGallery, Path=SelectedColor, Converter={StaticResource colorToBrushConverter}}"/>
                         </Fluent:DropDownButton.Icon>
-                        <Fluent:ColorGallery Mode="ThemeColors" x:Name="strokeColorGallery" SelectedColor="Black"/>
+                        <Fluent:ColorGallery Mode="ThemeColors" x:Name="strokeColorGallery" SelectedColor="Black" SelectedColorChanged="strokeColorGallery_SelectedColorChanged"/>
                     </Fluent:DropDownButton>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Fill Settings">
@@ -100,7 +100,7 @@
                         <Fluent:DropDownButton.Icon>
                             <Ellipse Fill="{Binding ElementName=fillColorGallery, Path=SelectedColor, Converter={StaticResource colorToBrushConverter}}"/>
                         </Fluent:DropDownButton.Icon>
-                        <Fluent:ColorGallery Mode="ThemeColors" x:Name="fillColorGallery" SelectedColor="Black"/>
+                        <Fluent:ColorGallery Mode="ThemeColors" x:Name="fillColorGallery" SelectedColor="Black" SelectedColorChanged="fillColorGallery_SelectedColorChanged"/>
                     </Fluent:DropDownButton>
                 </Fluent:RibbonGroupBox>
 
