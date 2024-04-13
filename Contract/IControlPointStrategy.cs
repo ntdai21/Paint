@@ -355,11 +355,11 @@ namespace Contract
         {
             if(_currentPosition==shape.LeftTop)
             {
-                shape.LeftTop = _currentPosition;
+                shape.LeftTop = Mouse.GetPosition(canvas);
             }
             else if (_currentPosition==shape.RightBottom)
             {
-                shape.RightBottom=_currentPosition;
+                shape.RightBottom= Mouse.GetPosition(canvas);
             }
         }
     }
