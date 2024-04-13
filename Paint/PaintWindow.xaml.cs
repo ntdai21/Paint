@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -36,6 +37,10 @@ namespace Paint
         List<ControlPoint> _currentControlPointList = new List<ControlPoint>();
         int _selectedControlPointIndex = -1;
         Point _currentCursor = new Point(-1, -1);
+        List<IShape> _copyBuffer = new List<IShape>();
+        Stack<List<IShape>> _undoStack = new Stack<List<IShape>>();
+        Stack<List<IShape>> _redoStack = new Stack<List<IShape>>();
+        bool isChange = false;
 
         List<IShape> _shapes = new List<IShape>();
 
@@ -48,6 +53,7 @@ namespace Paint
         public PaintWindow()
         {
             InitializeComponent();
+            KeyDown += Canvas_PreviewKeyDown;
             DataContext = this;
         }
 
@@ -85,6 +91,9 @@ namespace Paint
             _brushes.Add("1 2 4");
 
             brushGallery.ItemsSource = _brushes;
+
+            //Init screen
+            AddToUndo(_painters);
         }
 
         private void RenderCanvas()
@@ -119,6 +128,8 @@ namespace Paint
 
         }
 
+
+
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (_painter == null) return;
@@ -142,15 +153,18 @@ namespace Paint
                 Point cursor = e.GetPosition(canvas);
                 _currentCursor = cursor;
 
+                bool isAction = false;
                 //Logic for choose a shape
                 for (int i = 0; i < _painters.Count; i++)
                 {
                     BorderShape current = (BorderShape)_painters[i];
                     if (current.IsHovering(cursor.X, cursor.Y))
                     {
+                        isAction = true;
                         // hold ctrl to select multiple object
                         if (Keyboard.IsKeyDown(Key.LeftCtrl))
                         {
+
                             if (!_selectedShapes.Contains(_painters[i]))
                             {
                                 _selectedShapes.Add(_painters[i]);
@@ -163,15 +177,23 @@ namespace Paint
                         }
                         else
                         {
-                            //no hold ctrl to drop all and select one
-                            _selectedShapes.Clear();
-                            _selectedShapes.Add(_painters[i]);
-                            _currentControlPointList = current.GetControlPointList();
+                            if (_selectedShapes.Count < 2)
+                            {
+
+                                //no hold ctrl to drop all and select one
+                                _selectedShapes.Clear();
+                                _selectedShapes.Add(_painters[i]);
+                                _currentControlPointList = current.GetControlPointList();
+                            }
                         }
-                        RenderCanvas();
+
+
                     }
 
+
                 }
+
+
 
                 //Logic for choosing control point of single shape
                 if (_selectedShapes.Count == 1)
@@ -183,6 +205,7 @@ namespace Paint
                         {
                             if (_currentControlPointList[i].IsHovering(selected.RotateAngle, cursor.X, cursor.Y))
                             {
+                                isAction = true;
                                 _selectedControlPointIndex = i;
                                 break;
                             }
@@ -190,6 +213,13 @@ namespace Paint
                     }
 
                 }
+
+                //Click outside all not doing anything -> remove all selected shape
+                if (isAction == false)
+                {
+                    _selectedShapes.Clear();
+                }
+                RenderCanvas();
 
 
             }
@@ -223,6 +253,8 @@ namespace Paint
                 if (_selectedShapes.Count > 1)
                 {
                     //Handle multiple move
+                    isChange = true;
+
                     double deltaX, deltaY;
                     Point newCursor = e.GetPosition(canvas);
 
@@ -257,6 +289,8 @@ namespace Paint
                 else
                 {
                     //Handle edit single shape
+                    isChange = true;
+
                     BorderShape shape = (BorderShape)_selectedShapes[0];
 
                     if (_selectedControlPointIndex != -1)
@@ -268,6 +302,8 @@ namespace Paint
                     else
                     {
                         //Handle move single shape
+                        isChange = true;
+
                         double deltaX, deltaY;
                         Point newCursor = e.GetPosition(canvas);
 
@@ -306,13 +342,22 @@ namespace Paint
         {
             if (_isEdit)
             {
+                
+                if (isChange == true)
+                {
+                    AddToUndo(_painters);
+                    isChange = false;
+                }
+                
                 _selectedControlPointIndex = -1;
             }
             if (_isDrawing)
             {
                 _isDrawing = false;
                 _painters.Add((IShape)_painter.Clone());
+                AddToUndo(_painters);
                 _selectedControlPointIndex = -1;
+
             }
 
 
@@ -364,7 +409,195 @@ namespace Paint
 
         private void ChangeMode_Click(object sender, RoutedEventArgs e)
         {
+            /*
+            if (_isEdit == false)
+            {
+                AddToUndo(_painters);
+
+            }
+            */
             _isEdit = !_isEdit;
         }
+
+        private void HandleCopyEvent()
+        {
+            if (_isEdit)
+            {
+                _copyBuffer.Clear();
+                foreach (var shape in _selectedShapes)
+                {
+                    _copyBuffer.Add((IShape)shape.Clone());
+                }
+            }
+        }
+
+        private void HandlePasteEvent(Point cursor)
+        {
+            if (_isEdit && _copyBuffer.Count > 0)
+            {
+                AddToUndo(_painters);
+
+                List<IShape> temporary = new List<IShape>();
+                Point newCursor = Mouse.GetPosition(canvas);
+                Point minTopLeft;
+                double mintLength = double.MaxValue;
+
+                //Calculate min length from top left canvas
+                foreach (BorderShape shape in _copyBuffer)
+                {
+                    double dX = shape.LeftTop.X;
+                    double dY = shape.LeftTop.Y;
+                    double length = Math.Sqrt(dX * dX + dY * dY);
+
+                    if (length < mintLength)
+                    {
+                        mintLength = length;
+                        minTopLeft = shape.LeftTop;
+                    }
+                }
+
+                double deltaX = newCursor.X - minTopLeft.X;
+                double deltaY = newCursor.Y - minTopLeft.Y;
+
+                foreach (BorderShape shape in _copyBuffer)
+                {
+
+                    Point leftTop = shape.LeftTop;
+                    Point rightBottom = shape.RightBottom;
+
+                    leftTop.X += deltaX;
+                    leftTop.Y += deltaY;
+                    rightBottom.X += deltaX;
+                    rightBottom.Y += deltaY;
+
+                    shape.LeftTop = leftTop;
+                    shape.RightBottom = rightBottom;
+
+                    temporary.Add((IShape)shape.Clone());
+
+                }
+
+                foreach (IShape shape in temporary)
+                {
+                    _painters.Add(shape);
+                }
+
+                RenderCanvas();
+
+                _currentCursor = newCursor;
+            }
+        }
+
+        private void HandleCutEvent()
+        {
+            if (_isEdit)
+            {
+                _copyBuffer.Clear();
+                foreach (var shape in _selectedShapes)
+                {
+                    _copyBuffer.Add((IShape)shape.Clone());
+                    _painters.Remove(shape);
+                }
+
+                _selectedShapes.Clear();
+
+                RenderCanvas();
+            }
+        }
+
+        private void HandleUndoEvent()
+        {
+            if (true)
+            {
+                if (_undoStack.Count > 1)
+                {
+                    List<IShape> current = _undoStack.Pop(); // Remove current screen
+                    AddToRedo(current);
+                    List<IShape> old = _undoStack.Peek();
+                    _painters = old;
+                    _selectedShapes.Clear();
+                    RenderCanvas();
+                }
+
+            }
+        }
+
+        private void HandleRedoEvent()
+        {
+            if (true)
+            {
+                if(_redoStack.Count > 0)
+                {
+                List<IShape> last = _redoStack.Pop();
+                AddToUndo(last);
+                _painters = last;
+                _selectedShapes.Clear();
+                RenderCanvas();
+
+                }
+            }
+        }
+
+        private void Canvas_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.C)
+            {
+                HandleCopyEvent();
+                e.Handled = true;
+
+            }
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.V)
+            {
+                Point mouseCursor = Mouse.GetPosition(canvas);
+                if (mouseCursor.X >= 0 && mouseCursor.Y >= 0)
+                {
+                    HandlePasteEvent(mouseCursor);
+
+                }
+                e.Handled = true;
+            }
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.X)
+            {
+                HandleCutEvent();
+                e.Handled = true;
+            }
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Z)
+            {
+                HandleUndoEvent();
+                e.Handled = true;
+            }
+            if ((Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Y))
+            {
+                HandleRedoEvent();
+                e.Handled = true;
+            }
+        }
+
+        private void AddToUndo(List<IShape> shapes)
+        {
+            List<IShape> clone = new List<IShape>();
+
+            foreach (var shape in shapes)
+            {
+
+                clone.Add((IShape)shape.Clone());
+
+            }
+
+            _undoStack.Push(clone);
+        }
+
+        private void AddToRedo(List<IShape> shapes)
+        {
+            List<IShape> clone = new List<IShape>();
+
+            foreach (var shape in shapes)
+            {
+                clone.Add((IShape)shape.Clone());
+            }
+
+            _redoStack.Push(clone);
+        }
+
     }
 }

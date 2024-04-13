@@ -27,7 +27,7 @@ namespace MyRectangle
         public object Clone()
         {
             return MemberwiseClone();
-        }
+        } 
         public string Name => "Rectangle";
 
         public string ThumbnailPath
