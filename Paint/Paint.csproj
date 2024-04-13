@@ -9,13 +9,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Icons\add-image.png" />
+    <None Remove="Icons\copy.png" />
+    <None Remove="Icons\cut.png" />
+    <None Remove="Icons\flip-horizontal.png" />
+    <None Remove="Icons\flip-vertical.png" />
+    <None Remove="Icons\mouse-cursor.png" />
     <None Remove="Icons\paint-brush.png" />
+    <None Remove="Icons\paste.png" />
     <None Remove="Icons\rectangle.png" />
+    <None Remove="Icons\redo.png" />
+    <None Remove="Icons\save.png" />
+    <None Remove="Icons\undo.png" />
     <None Remove="Icons\width.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Fluent.Ribbon" Version="10.1.0" />
+    <PackageReference Include="Fody" Version="6.8.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,8 +39,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Icons\add-image.png" />
+    <Resource Include="Icons\copy.png" />
+    <Resource Include="Icons\cut.png" />
+    <Resource Include="Icons\flip-horizontal.png" />
+    <Resource Include="Icons\flip-vertical.png" />
+    <Resource Include="Icons\mouse-cursor.png" />
     <Resource Include="Icons\paint-brush.png" />
+    <Resource Include="Icons\paste.png" />
     <Resource Include="Icons\rectangle.png" />
+    <Resource Include="Icons\redo.png" />
+    <Resource Include="Icons\save.png" />
+    <Resource Include="Icons\undo.png" />
     <Resource Include="Icons\width.png" />
   </ItemGroup>
 

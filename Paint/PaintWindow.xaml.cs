@@ -3,7 +3,9 @@ using Fluent;
 using Paint.Converters;
 using Shapes;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,7 +28,7 @@ namespace Paint
     /// <summary>
     /// Interaction logic for PaintWindow.xaml
     /// </summary>
-    public partial class PaintWindow : RibbonWindow
+    public partial class PaintWindow : RibbonWindow, INotifyPropertyChanged
     {
         bool _isDrawing = false;
         Point _start;
@@ -49,6 +51,9 @@ namespace Paint
 
         List<string> _brushes = new();
         DoubleCollection _brush;
+
+        public int CanvasWidth { get; set; } = 2000;
+        public int CanvasHeight { get; set; } = 2000;
 
         public PaintWindow()
         {
@@ -92,8 +97,17 @@ namespace Paint
 
             brushGallery.ItemsSource = _brushes;
 
+
             //Init screen
             AddToUndo(_painters);
+
+            brushGallery.SelectedIndex = 0;
+
+            scrollViewer.PreviewMouseRightButtonUp += ScrollViwer_OnMouseRightButtonUp;
+            scrollViewer.MouseRightButtonUp += ScrollViwer_OnMouseRightButtonUp;
+            scrollViewer.PreviewMouseRightButtonDown += ScrollViewer_OnMouseRightButtonDown;
+            scrollViewer.MouseMove += ScrollViewer_OnMouseMove;
+
         }
 
         private void RenderCanvas()
@@ -133,6 +147,7 @@ namespace Paint
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (_painter == null) return;
+
 
             if (!_isEdit)
             {
@@ -223,6 +238,7 @@ namespace Paint
 
 
             }
+
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
@@ -242,6 +258,11 @@ namespace Paint
                 _painter.AddSecond(_end);
                 canvas.Children.Add(_painter.Convert());
             }
+             else if (cursorToggle.IsChecked == true)
+            {
+              
+            }
+
 
             if (_isEdit)
             {
@@ -335,6 +356,7 @@ namespace Paint
                         _currentCursor = newCursor;
                     }
                 }
+
             }
         }
 
@@ -367,6 +389,7 @@ namespace Paint
         {
             IShape item = (IShape)shapeGallery.SelectedItem;
             _painter = item;
+            cursorToggle.IsChecked = false;
         }
 
         private void ItemGallery_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -406,6 +429,7 @@ namespace Paint
             // Handle the click event
             e.Handled = true;
         }
+
 
         private void ChangeMode_Click(object sender, RoutedEventArgs e)
         {
@@ -599,5 +623,50 @@ namespace Paint
             _redoStack.Push(clone);
         }
 
+
+        Point? lastDragPoint;
+
+        void ScrollViewer_OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (lastDragPoint.HasValue)
+            {
+                Point posNow = e.GetPosition(scrollViewer);
+
+                double dX = posNow.X - lastDragPoint.Value.X;
+                double dY = posNow.Y - lastDragPoint.Value.Y;
+
+                lastDragPoint = posNow;
+
+                scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - dX);
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - dY);
+            }
+        }
+        void ScrollViewer_OnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var mousePos = e.GetPosition(scrollViewer);
+            if (mousePos.X <= scrollViewer.ViewportWidth && mousePos.Y <
+                scrollViewer.ViewportHeight) //make sure we still can use the scrollbars
+            {
+                scrollViewer.Cursor = Cursors.SizeAll;
+                lastDragPoint = mousePos;
+                Mouse.Capture(scrollViewer);
+            }
+        }
+
+        void ScrollViwer_OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            scrollViewer.Cursor = Cursors.Arrow;
+            scrollViewer.ReleaseMouseCapture();
+            lastDragPoint = null;
+        }
+
+        private void cursorToggle_Click(object sender, RoutedEventArgs e)
+        {
+            shapeGallery.SelectedItem = null;
+            _painter = null;
+            cursorToggle.IsChecked = true;
+        }
+
     }
+
 }

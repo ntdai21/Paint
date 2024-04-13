@@ -6,22 +6,63 @@
         xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
         xmlns:local="clr-namespace:Paint"
                      xmlns:converter="clr-namespace:Paint.Converters"
+                     xmlns:validationRules="clr-namespace:Paint.ValidationRules"
         mc:Ignorable="d" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen"
         Title="PaintWindow" Height="450" Width="800">
     <Fluent:RibbonWindow.Resources>
         <converter:ColorToBrushConverter x:Key="colorToBrushConverter"/>
+        <converter:DoubleToPercentageConverter x:Key="doubleToPercentageConverter"/>
     </Fluent:RibbonWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Fluent:Ribbon>
             <Fluent:Ribbon.Menu>
                 <Fluent:Backstage Header="File"></Fluent:Backstage>
             </Fluent:Ribbon.Menu>
             <Fluent:RibbonTabItem Header="Draw">
+                <Fluent:RibbonGroupBox Header="Commands">
+                    <Fluent:Button Icon="/Icons/save.png" Header="Save"/>
+                    <Fluent:Button Icon="/Icons/undo.png" SizeDefinition="Small" ToolTip="Undo"/>
+                    <Fluent:Button Icon="/Icons/redo.png" SizeDefinition="Small"  ToolTip="Redo"/>
+                    <Fluent:Button SizeDefinition="Small" Visibility="Hidden"/>
+                    <Fluent:Button Icon="/Icons/copy.png" SizeDefinition="Small" ToolTip="Copy"/>
+                    <Fluent:Button Icon="/Icons/cut.png" SizeDefinition="Small" ToolTip="Cut"/>
+                    <Fluent:Button Icon="/Icons/paste.png" SizeDefinition="Small" ToolTip="Paste"/>
+                    <Fluent:Button Icon="/Icons/flip-horizontal.png" SizeDefinition="Small" ToolTip="Flip Horizontal"/>
+                    <Fluent:Button Icon="/Icons/flip-vertical.png" SizeDefinition="Small" ToolTip="Flip Vertical"/>
+                </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox Header="Canvas">
+                    <Fluent:TextBox Header="Width " Width="100">
+                        <Fluent:TextBox.Text>
+                            <Binding Path="CanvasWidth" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                                <Binding.ValidationRules>
+                                    <validationRules:NumberValidationRule Min="1"/>
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </Fluent:TextBox.Text>
+                    </Fluent:TextBox>
+                    <Fluent:TextBox Header="Height">
+                        <Fluent:TextBox.Text>
+                            <Binding Path="CanvasHeight" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                                <Binding.ValidationRules>
+                                    <validationRules:NumberValidationRule Min="1"/>
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </Fluent:TextBox.Text>
+                    </Fluent:TextBox>
+                    <Fluent:DropDownButton Header="Background">
+                        <Fluent:DropDownButton.Icon>
+                            <Ellipse Fill="{Binding ElementName=backgroundColor, Path=SelectedColor, Converter={StaticResource colorToBrushConverter}}"/>
+                        </Fluent:DropDownButton.Icon>
+                        <Fluent:ColorGallery Mode="ThemeColors" x:Name="backgroundColor" SelectedColor="Transparent"/>
+                    </Fluent:DropDownButton>
+                </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Shapes">
+                    <Fluent:ToggleButton x:Name="cursorToggle" Header="Select" Icon="/Icons/mouse-cursor.png" Click="cursorToggle_Click" IsChecked="True"/>
                     <Fluent:InRibbonGallery x:Name="shapeGallery" MinItemsInRow="3" MaxItemsInRow="6" ItemWidth="64" ItemHeight="64" SelectionChanged="shapeGallery_SelectionChanged" PreviewMouseLeftButtonDown="ItemGallery_PreviewMouseLeftButtonDown">
                         <Fluent:InRibbonGallery.ItemTemplate>
                             <DataTemplate>
@@ -30,21 +71,21 @@
                         </Fluent:InRibbonGallery.ItemTemplate>
                     </Fluent:InRibbonGallery>
                 </Fluent:RibbonGroupBox>
-                <Fluent:RibbonGroupBox Header="Outline Settings">
+                <Fluent:RibbonGroupBox Header="Stroke Settings">
                     <Fluent:InRibbonGallery x:Name="brushGallery" MaxItemsInRow="1" ItemWidth="200" ItemHeight="20" SelectionChanged="brushGallery_SelectionChanged" PreviewMouseLeftButtonDown="brushGallery_PreviewMouseLeftButtonDown">
                         <Fluent:InRibbonGallery.ItemTemplate>
                             <DataTemplate>
-                                <Line StrokeThickness="{Binding ElementName=outlineThicknessSlider, Path=Value}" Margin="5 0 5 0" StrokeDashArray="{Binding}" Fill="Transparent" Stroke="Black" X2="190" Y1="10" Y2="10"/>
+                                <Line StrokeThickness="{Binding ElementName=strokeThicknessSlider, Path=Value}" Margin="5 0 5 0" StrokeDashArray="{Binding}" Fill="Transparent" Stroke="Black" X2="190" Y1="10" Y2="10"/>
                             </DataTemplate>
                         </Fluent:InRibbonGallery.ItemTemplate>
                     </Fluent:InRibbonGallery>
                     <Fluent:DropDownButton Header="Thickness" Icon="/Icons/width.png">
                         <DockPanel Margin="5">
                             <TextBlock DockPanel.Dock="Left" Margin="0 0 10 0">
-                                <Run Text="{Binding ElementName=outlineThicknessSlider, Path=Value}"/>
+                                <Run Text="{Binding ElementName=strokeThicknessSlider, Path=Value}"/>
                                 <Run Text="px"/>
                             </TextBlock>
-                            <Slider Minimum="0" Maximum="10" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="outlineThicknessSlider" DockPanel.Dock="Right" Width="200"/>
+                            <Slider Minimum="0" Maximum="10" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="strokeThicknessSlider" DockPanel.Dock="Right" Width="200"/>
                         </DockPanel>
                     </Fluent:DropDownButton>
                     <Fluent:DropDownButton Header="Color">
@@ -62,15 +103,39 @@
                         <Fluent:ColorGallery Mode="ThemeColors" x:Name="fillColorGallery" SelectedColor="Black"/>
                     </Fluent:DropDownButton>
                 </Fluent:RibbonGroupBox>
+
                 <Fluent:RibbonGroupBox Header="Edit">
                     <Fluent:Button Name="EditModeButton" Header="Edit" Click="ChangeMode_Click" Height="68" VerticalAlignment="Top">
                     </Fluent:Button>
+
+                <Fluent:RibbonGroupBox Header="Tools">
+                    <Fluent:Button Header="Add Image" Icon="/Icons/add-image.png"/>
+
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
-        <Canvas x:Name="canvas" Grid.Row="1"/>
-        <Canvas Grid.Row="1" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
-            
-        </Canvas>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" x:Name="scrollViewer">
+            <Grid Width="{Binding CanvasWidth}" Height="{Binding CanvasHeight}" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="True">
+                <Grid.LayoutTransform>
+                    <ScaleTransform ScaleX="{Binding ElementName=zoomSlider, Path=Value}" ScaleY="{Binding ElementName=zoomSlider, Path=Value}"/>
+                </Grid.LayoutTransform>
+                <Canvas x:Name="canvas" Background="{Binding ElementName=backgroundColor, Path=SelectedColor, Converter={StaticResource colorToBrushConverter}}"/>
+                <Canvas Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp"/>
+            </Grid>
+        </ScrollViewer>
+        <Fluent:StatusBar Grid.Row="2">
+            <Fluent:StatusBarItem HorizontalAlignment="Left" Margin="10 5 10 5">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding ElementName=zoomSlider, Path=Value, Converter={StaticResource doubleToPercentageConverter}}" Margin="0 0 5 0"/>
+                    <Slider Minimum="0.25" Maximum="5.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.25" x:Name="zoomSlider" Width="200"/>
+                    <TextBlock>
+                        <Run Text="Width ="/>
+                        <Run Text="{Binding CanvasWidth}"/>
+                        <Run Text=" - Height ="/>
+                        <Run Text="{Binding CanvasHeight}"/>
+                    </TextBlock>
+                </StackPanel>
+            </Fluent:StatusBarItem>
+        </Fluent:StatusBar>
     </Grid>
 </Fluent:RibbonWindow>
