@@ -103,8 +103,14 @@
                         <Fluent:ColorGallery Mode="ThemeColors" x:Name="fillColorGallery" SelectedColor="Black"/>
                     </Fluent:DropDownButton>
                 </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Edit">
+                    <Fluent:Button Name="EditModeButton" Header="Edit" Click="ChangeMode_Click" Height="68" VerticalAlignment="Top">
+                    </Fluent:Button>
+
                 <Fluent:RibbonGroupBox Header="Tools">
                     <Fluent:Button Header="Add Image" Icon="/Icons/add-image.png"/>
+
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>

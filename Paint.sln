@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLine", "MyLine\MyLine.csp
 		{77E0BB94-0DA7-4D80-AAE1-4E72B8ED51E5} = {77E0BB94-0DA7-4D80-AAE1-4E72B8ED51E5}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyEllipse", "MyEllipse\MyEllipse.csproj", "{BF424AA7-157A-4D0E-9A62-093E1EA4D90C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyEllipse", "MyEllipse\MyEllipse.csproj", "{BF424AA7-157A-4D0E-9A62-093E1EA4D90C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contract", "Contract\Contract.csproj", "{5E69B863-3CD2-4D9E-982C-555CA254B92E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,10 @@ Global
 		{BF424AA7-157A-4D0E-9A62-093E1EA4D90C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF424AA7-157A-4D0E-9A62-093E1EA4D90C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF424AA7-157A-4D0E-9A62-093E1EA4D90C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E69B863-3CD2-4D9E-982C-555CA254B92E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E69B863-3CD2-4D9E-982C-555CA254B92E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E69B863-3CD2-4D9E-982C-555CA254B92E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E69B863-3CD2-4D9E-982C-555CA254B92E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
