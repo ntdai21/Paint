@@ -546,6 +546,7 @@ namespace Paint
                 }
 
                 _selectedShapes.Clear();
+                AddToUndo(_painters);
 
                 RenderCanvas();
             }
