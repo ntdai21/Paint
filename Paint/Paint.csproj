@@ -15,6 +15,7 @@
     <None Remove="Icons\flip-horizontal.png" />
     <None Remove="Icons\flip-vertical.png" />
     <None Remove="Icons\mouse-cursor.png" />
+    <None Remove="Icons\open.png" />
     <None Remove="Icons\paint-brush.png" />
     <None Remove="Icons\paste.png" />
     <None Remove="Icons\rectangle.png" />
@@ -45,6 +46,7 @@
     <Resource Include="Icons\flip-horizontal.png" />
     <Resource Include="Icons\flip-vertical.png" />
     <Resource Include="Icons\mouse-cursor.png" />
+    <Resource Include="Icons\open.png" />
     <Resource Include="Icons\paint-brush.png" />
     <Resource Include="Icons\paste.png" />
     <Resource Include="Icons\rectangle.png" />

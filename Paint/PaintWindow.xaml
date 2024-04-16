@@ -26,6 +26,7 @@
             <Fluent:RibbonTabItem Header="Draw">
                 <Fluent:RibbonGroupBox Header="Commands">
                     <Fluent:Button Icon="/Icons/save.png" Header="Save"/>
+                    <Fluent:Button Icon="/Icons/open.png" Header="Open"/>
                     <Fluent:Button Icon="/Icons/undo.png" SizeDefinition="Small" ToolTip="Undo"/>
                     <Fluent:Button Icon="/Icons/redo.png" SizeDefinition="Small"  ToolTip="Redo"/>
                     <Fluent:Button SizeDefinition="Small" Visibility="Hidden"/>
