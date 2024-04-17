@@ -12,9 +12,12 @@
     <None Remove="Icons\add-image.png" />
     <None Remove="Icons\copy.png" />
     <None Remove="Icons\cut.png" />
+    <None Remove="Icons\export.png" />
     <None Remove="Icons\flip-horizontal.png" />
     <None Remove="Icons\flip-vertical.png" />
+    <None Remove="Icons\import.png" />
     <None Remove="Icons\mouse-cursor.png" />
+    <None Remove="Icons\new.png" />
     <None Remove="Icons\open.png" />
     <None Remove="Icons\paint-brush.png" />
     <None Remove="Icons\paste.png" />
@@ -31,6 +34,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
   </ItemGroup>
 
@@ -41,6 +45,9 @@
 
   <ItemGroup>
     <Resource Include="Icons\add-image.png" />
+    <Resource Include="Icons\export.png" />
+    <Resource Include="Icons\import.png" />
+    <Resource Include="Icons\new.png" />
     <Resource Include="Icons\copy.png" />
     <Resource Include="Icons\cut.png" />
     <Resource Include="Icons\flip-horizontal.png" />

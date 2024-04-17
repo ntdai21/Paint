@@ -1,5 +1,6 @@
 ﻿using Contract;
 using Fluent;
+using Newtonsoft.Json;
 using Paint.Converters;
 using Shapes;
 using System;
@@ -22,6 +23,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace Paint
 {
@@ -55,6 +57,10 @@ namespace Paint
 
         public int CanvasWidth { get; set; } = 2000;
         public int CanvasHeight { get; set; } = 2000;
+        public string BackgroundImagePath = string.Empty;
+        public bool IsDrawing { get; set; } = false;
+        public bool IsSaved { get; set; } = false;
+        private string savedFilePath = string.Empty;
 
         public PaintWindow()
         {
@@ -746,6 +752,202 @@ namespace Paint
 
                 RenderCanvas();
             }
+        }
+
+        private void SaveImage(string filename, BitmapEncoder encoder, RenderTargetBitmap renderBitmap)
+        {
+            encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+
+            using (FileStream file = File.Create(filename))
+            {
+                encoder.Save(file);
+            }
+        }
+
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.SaveFileDialog
+            {
+                Filter = "PNG (*.png)|*.png| JPEG (*.jpeg)|*.jpeg| BMP (*.bmp)|*.bmp | TIFF (*.tiff)|*.tiff"
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string filename = dialog.FileName;
+                string extension = Path.GetExtension(filename).ToLower();
+
+                RenderTargetBitmap renderBitmap = new(
+                    (int)canvas.ActualWidth, (int)canvas.ActualHeight,
+                    96d, 96d, PixelFormats.Pbgra32);
+
+                canvas.Measure(new Size((int)canvas.ActualWidth, (int)canvas.ActualHeight));
+                canvas.Arrange(new Rect(new Size((int)canvas.ActualWidth, (int)canvas.ActualHeight)));
+                renderBitmap.Render(canvas);
+
+                BitmapEncoder encoder;
+                switch (extension)
+                {
+                    case ".png":
+                        encoder = new PngBitmapEncoder();
+                        break;
+                    case ".jpeg":
+                        encoder = new JpegBitmapEncoder();
+                        break;
+                    case ".tiff":
+                        encoder = new TiffBitmapEncoder();
+                        break;
+                    case ".bmp":
+                        encoder = new BmpBitmapEncoder();
+                        break;
+                    default:
+                        return;
+                }
+
+                SaveImage(filename, encoder, renderBitmap);
+            }
+        }
+
+        private void Open_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.Filter = "Image Files|*.png;*.jpeg;*.bmp;*.tiff";
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = dialog.FileName;
+                ImageBrush brush = new ImageBrush();
+                brush.ImageSource = new BitmapImage(new Uri(path, UriKind.Absolute));
+                canvas.Background = brush;
+            }
+        }
+
+        private void New_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult result = MessageBoxResult.No;
+            if (canvas.Children.Count != 0)
+            {
+                result = MessageBox.Show("Your current session will be lost?", "Do you want to save this working session?", MessageBoxButton.YesNoCancel);
+            }
+
+            if (result == MessageBoxResult.Yes)
+            {
+                var settings = new JsonSerializerSettings()
+                {
+                    TypeNameHandling = TypeNameHandling.Objects
+                };
+
+                var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
+
+                StringBuilder builder = new();
+                builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}");
+                string content = builder.ToString();
+
+                var dialog = new System.Windows.Forms.SaveFileDialog
+                {
+                    Filter = "JSON (*.json)|*.json"
+                };
+
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string path = dialog.FileName;
+                    File.WriteAllText(path, content);
+                }
+            }
+            _painters.Clear();
+            RenderCanvas();
+        }
+
+
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+
+            var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
+
+            StringBuilder builder = new();
+            builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}");
+            string content = builder.ToString();
+
+            var dialog = new System.Windows.Forms.SaveFileDialog
+            {
+                Filter = "JSON (*.json)|*.json"
+            };
+
+            if (IsSaved == true)
+            {
+                File.WriteAllText(savedFilePath, content);
+            }
+
+            else
+            {
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string path = dialog.FileName;
+                    savedFilePath = path;
+                    File.WriteAllText(path, content);
+                    IsSaved = true;
+                }
+            }
+
+            MessageBox.Show("Saved Successfully");
+        }
+        private void AddBackground(string path)
+        {
+            BackgroundImagePath = path;
+
+            ImageBrush brush = new()
+            {
+                ImageSource = new BitmapImage(new Uri(path, UriKind.Absolute)),
+                Stretch = Stretch.UniformToFill,
+            };
+
+            canvas.Background = brush;
+        }
+        private void Import_Click(object sender, RoutedEventArgs e)
+        {
+
+
+            var dialog = new System.Windows.Forms.OpenFileDialog
+            {
+                Filter = "JSON (*.json)|*.json"
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = dialog.FileName;
+
+                string[] content = File.ReadAllLines(path);
+
+                string background = "";
+                string json = content[0];
+
+                if (content.Length > 1)
+                {
+                    background = content[1];
+                }
+
+                var settings = new JsonSerializerSettings()
+                {
+                    TypeNameHandling = TypeNameHandling.Objects
+                };
+
+                _painters.Clear();
+                List<IShape> savedShapes = JsonConvert.DeserializeObject<List<IShape>>(json, settings);
+                foreach (var item in savedShapes!)
+                {
+                    _painters.Add(item);
+                }
+
+                if (!string.IsNullOrEmpty(background))
+                {
+                    AddBackground(background);
+                }
+            }
+
+            RenderCanvas();
         }
     }
 

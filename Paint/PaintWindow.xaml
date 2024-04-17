@@ -21,12 +21,23 @@
         </Grid.RowDefinitions>
         <Fluent:Ribbon>
             <Fluent:Ribbon.Menu>
-                <Fluent:Backstage Header="File"></Fluent:Backstage>
+                <Fluent:ApplicationMenu Header="File">
+                    <Fluent:MenuItem Header="New" Icon="/Icons/new.png" Click="New_Click"
+                      RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Fluent:MenuItem Header="Open" Icon="/Icons/open.png" Click="Open_Click"
+                      RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Fluent:MenuItem Header="Save As Image" Icon="Icons/save.png" Click="Save_Click"
+                      RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Fluent:MenuItem Header="Import Json" Icon="Icons/import.png" Click="Import_Click"
+                      RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Fluent:MenuItem Header="Export Json" Icon="Icons/export.png" Click="Export_Click"
+                      RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Fluent:ApplicationMenu>
             </Fluent:Ribbon.Menu>
+
             <Fluent:RibbonTabItem Header="Draw">
                 <Fluent:RibbonGroupBox Header="Commands">
-                    <Fluent:Button Icon="/Icons/save.png" Header="Save"/>
-                    <Fluent:Button Icon="/Icons/open.png" Header="Open"/>
+                    <Fluent:Button Icon="/Icons/save.png" Header="Save" Click="Save_Click"/>
                     <Fluent:Button Icon="/Icons/undo.png" SizeDefinition="Small" ToolTip="Undo"/>
                     <Fluent:Button Icon="/Icons/redo.png" SizeDefinition="Small"  ToolTip="Redo"/>
                     <Fluent:Button SizeDefinition="Small" Visibility="Hidden"/>
