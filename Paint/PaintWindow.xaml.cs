@@ -114,7 +114,7 @@ namespace Paint
             scrollViewer.MouseRightButtonUp += ScrollViwer_OnMouseRightButtonUp;
             scrollViewer.PreviewMouseRightButtonDown += ScrollViewer_OnMouseRightButtonDown;
             scrollViewer.MouseMove += ScrollViewer_OnMouseMove;
-
+            LoadShapesFromXml("data.xml");
         }
 
         private void RenderCanvas()
@@ -148,9 +148,7 @@ namespace Paint
             }
 
         }
-
-
-
+      
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (_painter == null) return;
@@ -452,7 +450,6 @@ namespace Paint
             e.Handled = true;
         }
 
-
         private void ChangeMode_Click(object sender, RoutedEventArgs e)
         {
 
@@ -753,28 +750,76 @@ namespace Paint
                 RenderCanvas();
             }
         }
-
-        private void SaveImage(string filename, BitmapEncoder encoder, RenderTargetBitmap renderBitmap)
+        private void AddBackground(string path)
         {
-            encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+            BackgroundImagePath = path;
 
-            using (FileStream file = File.Create(filename))
+            ImageBrush brush = new()
             {
-                encoder.Save(file);
+                ImageSource = new BitmapImage(new Uri(path, UriKind.Absolute)),
+                Stretch = Stretch.UniformToFill,
+            };
+
+            canvas.Background = brush;
+        }
+        private bool SaveImage(string filename, BitmapEncoder encoder, RenderTargetBitmap renderBitmap)
+        {
+            try
+            {
+                encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+
+                using (FileStream file = File.Create(filename))
+                {
+                    encoder.Save(file);
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
+        private BitmapEncoder CreateEncoder(string extension)
+        {
+            switch (extension)
+            {
+                case ".png":
+                    return new PngBitmapEncoder();
+                case ".jpeg":
+                    return new JpegBitmapEncoder();
+                case ".tiff":
+                    return new TiffBitmapEncoder();
+                case ".bmp":
+                    return new BmpBitmapEncoder();
+                default:
+                    return null;
+            }
+        }
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new System.Windows.Forms.SaveFileDialog
+            if (savedFilePath == string.Empty)
             {
-                Filter = "PNG (*.png)|*.png| JPEG (*.jpeg)|*.jpeg| BMP (*.bmp)|*.bmp | TIFF (*.tiff)|*.tiff"
-            };
+                var dialog = new System.Windows.Forms.SaveFileDialog
+                {
+                    Filter = "PNG (*.png)|*.png| JPEG (*.jpeg)|*.jpeg| BMP (*.bmp)|*.bmp | TIFF (*.tiff)|*.tiff"
+                };
+                var result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    savedFilePath = dialog.FileName;
+                }
+                else if (result == System.Windows.Forms.DialogResult.Cancel)
+                {
+                    MessageBox.Show("Failed to save image");
+                    return;
+                }
+            }
 
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (!string.IsNullOrEmpty(savedFilePath))
             {
-                string filename = dialog.FileName;
-                string extension = Path.GetExtension(filename).ToLower();
+                string extension = Path.GetExtension(savedFilePath).ToLower();
 
                 RenderTargetBitmap renderBitmap = new(
                     (int)canvas.ActualWidth, (int)canvas.ActualHeight,
@@ -784,30 +829,65 @@ namespace Paint
                 canvas.Arrange(new Rect(new Size((int)canvas.ActualWidth, (int)canvas.ActualHeight)));
                 renderBitmap.Render(canvas);
 
-                BitmapEncoder encoder;
-                switch (extension)
-                {
-                    case ".png":
-                        encoder = new PngBitmapEncoder();
-                        break;
-                    case ".jpeg":
-                        encoder = new JpegBitmapEncoder();
-                        break;
-                    case ".tiff":
-                        encoder = new TiffBitmapEncoder();
-                        break;
-                    case ".bmp":
-                        encoder = new BmpBitmapEncoder();
-                        break;
-                    default:
-                        return;
-                }
+                BitmapEncoder encoder = CreateEncoder(extension);
 
-                SaveImage(filename, encoder, renderBitmap);
+                if (encoder != null)
+                {
+                    bool isSaved = SaveImage(savedFilePath, encoder, renderBitmap);
+                    IsSaved = isSaved;
+
+                    if (isSaved)
+                    {
+                        MessageBox.Show("Saved Successfully");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to save image");
+                    }
+                }
+            }
+        }
+        private void Open_Click(object sender, RoutedEventArgs e)
+        {
+            if (canvas.Children.Count != 0 && IsSaved == false)
+            {
+                var result = MessageBox.Show("Your current session will be lost?", "Do you want to save this working session?", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Yes)
+                {
+                    SaveCurrentSession();
+                }
+                _painters.Clear();
+                RenderCanvas();
+            }
+            OpenImageFile();
+        }
+
+        private void SaveCurrentSession()
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+
+            var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
+
+            StringBuilder builder = new();
+            builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}");
+            string content = builder.ToString();
+
+            var savedialog = new System.Windows.Forms.SaveFileDialog
+            {
+                Filter = "JSON (*.json)|*.json"
+            };
+
+            if (savedialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = savedialog.FileName;
+                File.WriteAllText(path, content);
             }
         }
 
-        private void Open_Click(object sender, RoutedEventArgs e)
+        private void OpenImageFile()
         {
             var dialog = new System.Windows.Forms.OpenFileDialog();
             dialog.Filter = "Image Files|*.png;*.jpeg;*.bmp;*.tiff";
@@ -818,45 +898,25 @@ namespace Paint
                 ImageBrush brush = new ImageBrush();
                 brush.ImageSource = new BitmapImage(new Uri(path, UriKind.Absolute));
                 canvas.Background = brush;
+                IsSaved = true;
+                savedFilePath = path;
             }
         }
 
         private void New_Click(object sender, RoutedEventArgs e)
         {
-            MessageBoxResult result = MessageBoxResult.No;
-            if (canvas.Children.Count != 0)
+            if (canvas.Children.Count != 0 && IsSaved == false)
             {
-                result = MessageBox.Show("Your current session will be lost?", "Do you want to save this working session?", MessageBoxButton.YesNoCancel);
-            }
-
-            if (result == MessageBoxResult.Yes)
-            {
-                var settings = new JsonSerializerSettings()
+                var result = MessageBox.Show("Your current session will be lost?", "Do you want to save this working session?", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Yes)
                 {
-                    TypeNameHandling = TypeNameHandling.Objects
-                };
-
-                var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
-
-                StringBuilder builder = new();
-                builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}");
-                string content = builder.ToString();
-
-                var dialog = new System.Windows.Forms.SaveFileDialog
-                {
-                    Filter = "JSON (*.json)|*.json"
-                };
-
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    string path = dialog.FileName;
-                    File.WriteAllText(path, content);
+                    SaveCurrentSession();
                 }
             }
             _painters.Clear();
+            savedFilePath = string.Empty;
             RenderCanvas();
         }
-
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
@@ -876,11 +936,11 @@ namespace Paint
                 Filter = "JSON (*.json)|*.json"
             };
 
-            if (IsSaved == true)
+            if (savedFilePath != string.Empty)
             {
                 File.WriteAllText(savedFilePath, content);
+                MessageBox.Show("Saved Successfully");
             }
-
             else
             {
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -891,25 +951,10 @@ namespace Paint
                     IsSaved = true;
                 }
             }
-
-            MessageBox.Show("Saved Successfully");
         }
-        private void AddBackground(string path)
-        {
-            BackgroundImagePath = path;
 
-            ImageBrush brush = new()
-            {
-                ImageSource = new BitmapImage(new Uri(path, UriKind.Absolute)),
-                Stretch = Stretch.UniformToFill,
-            };
-
-            canvas.Background = brush;
-        }
         private void Import_Click(object sender, RoutedEventArgs e)
         {
-
-
             var dialog = new System.Windows.Forms.OpenFileDialog
             {
                 Filter = "JSON (*.json)|*.json"
@@ -918,6 +963,7 @@ namespace Paint
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 string path = dialog.FileName;
+                savedFilePath = path;
 
                 string[] content = File.ReadAllLines(path);
 
@@ -949,6 +995,53 @@ namespace Paint
 
             RenderCanvas();
         }
+
+        private void Closing_Click(object sender, CancelEventArgs e)
+        {
+            if (_painters.Count > 0)
+            {
+                MessageBoxResult result = MessageBox.Show("Do you want to save your work for the next session?", "Save work", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    SaveShapesToXml("data.xml");
+                }
+                else
+                {
+                    File.WriteAllText("data.xml", "No");
+                }
+            }
+        }
+
+        private void SaveShapesToXml(string filename)
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+
+            var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
+
+            File.WriteAllText(filename, serializedShapeList);
+        }
+
+        private void LoadShapesFromXml(string filename)
+        {
+            if (File.Exists(filename))
+            {
+                string content = File.ReadAllText(filename);
+                if (content != "No")
+                {
+                    var settings = new JsonSerializerSettings()
+                    {
+                        TypeNameHandling = TypeNameHandling.Objects
+                    };
+
+                    _painters = JsonConvert.DeserializeObject<List<IShape>>(content, settings);
+                    RenderCanvas();
+                }
+            }
+        }
+
     }
 
 }
