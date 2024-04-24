@@ -37,7 +37,7 @@ namespace Paint
         Point _end;
 
         List<IShape> _selectedShapes = new List<IShape>();
-        bool _isEdit = false;
+        bool _isEdit { get => cursorToggle.IsChecked == true; }
         List<ControlPoint> _currentControlPointList = new List<ControlPoint>();
         int _selectedControlPointIndex = -1;
         Point _currentCursor = new Point(-1, -1);
@@ -151,11 +151,9 @@ namespace Paint
       
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_painter == null) return;
-
-
             if (!_isEdit)
             {
+                if (_painter == null) return;
                 //Draw
                 _isDrawing = true;
                 _start = e.GetPosition(canvas);
@@ -388,8 +386,6 @@ namespace Paint
                 _selectedControlPointIndex = -1;
 
             }
-
-
         }
 
         private void shapeGallery_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -397,6 +393,9 @@ namespace Paint
             IShape item = (IShape)shapeGallery.SelectedItem;
             _painter = item;
             cursorToggle.IsChecked = false;
+            _selectedControlPointIndex = -1;
+            _selectedShapes.Clear();
+            RenderCanvas();
         }
 
         private void ItemGallery_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -452,20 +451,9 @@ namespace Paint
 
         private void ChangeMode_Click(object sender, RoutedEventArgs e)
         {
-
-            _isEdit = !_isEdit;
-
-            if (_isEdit == true)
-            {
-                cursorToggle.IsChecked = true;
-            }
-            else
-            {
-                cursorToggle.IsChecked = false;
-                _selectedControlPointIndex = -1;
-                _selectedShapes.Clear();
-                RenderCanvas();
-            }
+            shapeGallery.SelectedItem = null;
+            _painter = null;
+            cursorToggle.IsChecked = true;
         }
 
         private void HandleCopyEvent()
