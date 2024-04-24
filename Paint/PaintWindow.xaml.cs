@@ -762,11 +762,14 @@ namespace Paint
 
             canvas.Background = brush;
         }
-        private bool SaveImage(string filename, BitmapEncoder encoder, RenderTargetBitmap renderBitmap)
+        private bool SaveImage(string filename, BitmapEncoder encoder, RenderTargetBitmap renderBitmap, string json)
         {
             try
             {
-                encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+                BitmapMetadata metadata = new BitmapMetadata("png");
+                metadata.SetQuery("/Text/JSON", json);
+
+                encoder.Frames.Add(BitmapFrame.Create(renderBitmap, null, metadata, null));
 
                 using (FileStream file = File.Create(filename))
                 {
@@ -803,7 +806,7 @@ namespace Paint
             {
                 var dialog = new System.Windows.Forms.SaveFileDialog
                 {
-                    Filter = "PNG (*.png)|*.png| JPEG (*.jpeg)|*.jpeg| BMP (*.bmp)|*.bmp | TIFF (*.tiff)|*.tiff"
+                    Filter = "PNG (*.png)|*.png"
                 };
                 var result = dialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -816,6 +819,16 @@ namespace Paint
                     return;
                 }
             }
+
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+            StringBuilder builder = new();
+
+            var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
+            builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}");
+            string content = builder.ToString();
 
             if (!string.IsNullOrEmpty(savedFilePath))
             {
@@ -833,7 +846,7 @@ namespace Paint
 
                 if (encoder != null)
                 {
-                    bool isSaved = SaveImage(savedFilePath, encoder, renderBitmap);
+                    bool isSaved = SaveImage(savedFilePath, encoder, renderBitmap, content);
                     IsSaved = isSaved;
 
                     if (isSaved)
@@ -886,23 +899,44 @@ namespace Paint
                 File.WriteAllText(path, content);
             }
         }
-
         private void OpenImageFile()
         {
             var dialog = new System.Windows.Forms.OpenFileDialog();
-            dialog.Filter = "Image Files|*.png;*.jpeg;*.bmp;*.tiff";
+            dialog.Filter = "Image Files|*.png";
 
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 string path = dialog.FileName;
                 ImageBrush brush = new ImageBrush();
                 brush.ImageSource = new BitmapImage(new Uri(path, UriKind.Absolute));
-                canvas.Background = brush;
                 IsSaved = true;
                 savedFilePath = path;
+
+                // Read JSON from metadata
+                using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    PngBitmapDecoder decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+                    BitmapFrame frame = decoder.Frames[0];
+                    BitmapMetadata metadata = (BitmapMetadata)frame.Metadata;
+
+                    if (metadata != null)
+                    {
+                        string json = metadata.GetQuery("/Text/JSON") as string;
+
+                        if (!string.IsNullOrEmpty(json))
+                        {
+                            var settings = new JsonSerializerSettings()
+                            {
+                                TypeNameHandling = TypeNameHandling.Objects
+                            };
+
+                            _painters = JsonConvert.DeserializeObject<List<IShape>>(json, settings);
+                            RenderCanvas();
+                        }
+                    }
+                }
             }
         }
-
         private void New_Click(object sender, RoutedEventArgs e)
         {
             if (canvas.Children.Count != 0 && IsSaved == false)
