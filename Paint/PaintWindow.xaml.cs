@@ -609,6 +609,11 @@ namespace Paint
                 HandleRedoEvent();
                 e.Handled = true;
             }
+            if ((Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.S))
+            {
+                Save_Click(sender, e);
+                e.Handled = true;
+            }
         }
 
         private void AddToUndo(List<IShape> shapes)
@@ -790,7 +795,7 @@ namespace Paint
         }
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (savedFilePath == string.Empty)
+            if (savedFilePath == string.Empty || Path.GetExtension(savedFilePath) !=".png")
             {
                 var dialog = new System.Windows.Forms.SaveFileDialog
                 {
@@ -807,6 +812,7 @@ namespace Paint
                     return;
                 }
             }
+
 
             var settings = new JsonSerializerSettings()
             {
@@ -958,7 +964,7 @@ namespace Paint
                 Filter = "JSON (*.json)|*.json"
             };
 
-            if (savedFilePath != string.Empty)
+            if (savedFilePath != string.Empty || Path.GetExtension(savedFilePath) !=".json")
             {
                 File.WriteAllText(savedFilePath, content);
                 MessageBox.Show("Saved Successfully");
