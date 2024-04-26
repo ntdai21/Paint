@@ -41,6 +41,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Contract\Contract.csproj" />
     <ProjectReference Include="..\IShape\IShape.csproj" />
+    <ProjectReference Include="..\MyImage\MyImage.csproj" />
   </ItemGroup>
 
   <ItemGroup>

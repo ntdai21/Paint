@@ -24,6 +24,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Path = System.IO.Path;
+using MyImages;
 
 namespace Paint
 {
@@ -394,6 +395,7 @@ namespace Paint
 
         }
 
+        
         private void shapeGallery_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             IShape item = (IShape)shapeGallery.SelectedItem;
@@ -485,6 +487,7 @@ namespace Paint
 
         private void HandlePasteEvent(Point cursor)
         {
+            
             if (_isEdit && _copyBuffer.Count > 0)
             {
                 AddToUndo(_painters);
@@ -538,6 +541,14 @@ namespace Paint
 
                 _currentCursor = newCursor;
             }
+            else if (Clipboard.GetImage() != null)
+            {
+                _painters.Add((IShape)new MyImage());
+                AddToUndo(_painters);
+                RenderCanvas();
+
+            }
+
         }
 
         private void HandleCutEvent()
@@ -949,6 +960,8 @@ namespace Paint
 
             RenderCanvas();
         }
+
+        
     }
 
 }
