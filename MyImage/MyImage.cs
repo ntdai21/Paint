@@ -11,6 +11,14 @@ namespace MyImages
 {
     public class MyImage : BorderShape, IShape
     {
+        BitmapSource _imgSrc = null;
+
+        public MyImage(BitmapSource imgSrc)
+        {
+            _imgSrc = imgSrc;
+            LeftTop = new Point(0, 0);
+            RightBottom = _imgSrc != null ? new Point(_imgSrc.Width, _imgSrc.Height) : new Point(0, 0);
+        }
         public void AddFirst(Point pt)
         {
             LeftTop = pt;
@@ -44,26 +52,26 @@ namespace MyImages
 
         public UIElement Convert()
         {
-
-            BitmapSource imgSrc = Clipboard.GetImage();
+            Point _start = LeftTop;
+            Point _end = RightBottom;
             ImageBrush brush = new ImageBrush();
-            brush.ImageSource = imgSrc;
+            brush.ImageSource = _imgSrc;
             //paintCanvas.Background = brush;
 
             UIElement rectangle = new Rectangle()
             {
-                Width = imgSrc.Width,
-                Height = imgSrc.Height,
+                Width = Math.Abs(_end.X - _start.X),
+                Height = Math.Abs(_end.Y - _start.Y),
                 Fill = brush
             };
 
 
-            //RotateTransform transform = new RotateTransform(RotateAngle);
-            //transform.CenterX = Math.Abs(_end.X - _start.X) * 1.0 / 2;
-            //transform.CenterY = Math.Abs(_end.Y - _start.Y) * 1.0 / 2;
-            Canvas.SetLeft(rectangle, 0);
-            Canvas.SetTop(rectangle, 0);
-            //rectangle.RenderTransform = transform;
+            RotateTransform transform = new RotateTransform(RotateAngle);
+            transform.CenterX = Math.Abs(_end.X - _start.X) * 1.0 / 2;
+            transform.CenterY = Math.Abs(_end.Y - _start.Y) * 1.0 / 2;
+            Canvas.SetLeft(rectangle, Math.Min(_end.X, _start.X));
+            Canvas.SetTop(rectangle, Math.Min(_end.Y, _start.Y));
+            rectangle.RenderTransform = transform;
             return rectangle;
         }
     }

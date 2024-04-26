@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Paint"
         xmlns:converter="clr-namespace:Paint.Converters"
         xmlns:validationRules="clr-namespace:Paint.ValidationRules"
-        mc:Ignorable="d" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" Closing="Closing_Click"
         Title="PaintWindow" Height="450" Width="800">
     <Fluent:RibbonWindow.Resources>
         <converter:ColorToBrushConverter x:Key="colorToBrushConverter"/>
