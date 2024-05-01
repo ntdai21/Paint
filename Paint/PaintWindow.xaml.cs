@@ -149,7 +149,7 @@ namespace Paint
             }
 
         }
-      
+
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (!_isEdit)
@@ -389,7 +389,7 @@ namespace Paint
             }
         }
 
-        
+
         private void shapeGallery_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             IShape item = (IShape)shapeGallery.SelectedItem;
@@ -472,10 +472,10 @@ namespace Paint
 
         private void HandlePasteEvent(Point cursor)
         {
-            
-            if (_isEdit && _copyBuffer.Count > 0)
+
+            if (_copyBuffer.Count > 0)
             {
-                AddToUndo(_painters);
+
 
                 List<IShape> temporary = new List<IShape>();
                 Point newCursor = Mouse.GetPosition(canvas);
@@ -522,6 +522,8 @@ namespace Paint
                     _painters.Add(shape);
                 }
 
+                AddToUndo(_painters);
+
                 RenderCanvas();
 
                 _currentCursor = newCursor;
@@ -556,19 +558,18 @@ namespace Paint
 
         private void HandleUndoEvent()
         {
-            if (true)
-            {
-                if (_undoStack.Count > 1)
-                {
-                    List<IShape> current = _undoStack.Pop(); // Remove current screen
-                    AddToRedo(current);
-                    List<IShape> old = _undoStack.Peek();
-                    _painters = old;
-                    _selectedShapes.Clear();
-                    RenderCanvas();
-                }
 
+            if (_undoStack.Count > 1)
+            {
+                List<IShape> current = _undoStack.Pop(); // Remove current screen
+                AddToRedo(current);
+                List<IShape> old = _undoStack.Peek();
+                _painters.Clear();
+                _painters = old;
+                _selectedShapes.Clear();
+                RenderCanvas();
             }
+
         }
 
         private void HandleRedoEvent()
@@ -699,7 +700,7 @@ namespace Paint
 
         private void strokeThicknessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (_isEdit && _selectedShapes.Count>0)
+            if (_isEdit && _selectedShapes.Count > 0)
             {
                 _isChangeProperty = true;
 
@@ -719,7 +720,7 @@ namespace Paint
         {
             Color? selectedColor = strokeColorGallery.SelectedColor;
 
-            if (_isEdit && selectedColor.HasValue && _selectedShapes.Count>0)
+            if (_isEdit && selectedColor.HasValue && _selectedShapes.Count > 0)
             {
                 _isChangeProperty = true;
 
@@ -739,7 +740,7 @@ namespace Paint
         {
             Color? selectedColor = fillColorGallery.SelectedColor;
 
-            if (_isEdit && selectedColor.HasValue && _selectedShapes.Count>0)
+            if (_isEdit && selectedColor.HasValue && _selectedShapes.Count > 0)
             {
                 _isChangeProperty = true;
 
@@ -806,7 +807,7 @@ namespace Paint
         }
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (savedFilePath == string.Empty || Path.GetExtension(savedFilePath) !=".png")
+            if (savedFilePath == string.Empty || Path.GetExtension(savedFilePath) != ".png")
             {
                 var dialog = new System.Windows.Forms.SaveFileDialog
                 {
@@ -975,7 +976,7 @@ namespace Paint
                 Filter = "JSON (*.json)|*.json"
             };
 
-            if (savedFilePath != string.Empty || Path.GetExtension(savedFilePath) !=".json")
+            if (savedFilePath != string.Empty || Path.GetExtension(savedFilePath) != ".json")
             {
                 File.WriteAllText(savedFilePath, content);
                 MessageBox.Show("Saved Successfully");
@@ -1035,7 +1036,7 @@ namespace Paint
             RenderCanvas();
         }
 
-      
+
         private void Closing_Click(object sender, CancelEventArgs e)
         {
             if (_painters.Count > 0)
@@ -1082,5 +1083,25 @@ namespace Paint
             }
         }
 
+
+        private void cutButton_Click(object sender, RoutedEventArgs e)
+        {
+            HandleCutEvent();
+        }
+
+        private void copyButton_Click(object sender, RoutedEventArgs e)
+        {
+            HandleCopyEvent();
+        }
+
+        private void redoButton_Click(object sender, RoutedEventArgs e)
+        {
+            HandleRedoEvent();
+        }
+
+        private void undoButton_Click(object sender, RoutedEventArgs e)
+        {
+            HandleUndoEvent();
+        }
     }
 }
