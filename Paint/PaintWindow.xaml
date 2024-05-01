@@ -38,14 +38,11 @@
             <Fluent:RibbonTabItem Header="Draw">
                 <Fluent:RibbonGroupBox Header="Commands">
                     <Fluent:Button Icon="/Icons/save.png" Header="Save" Click="Save_Click"/>
-                    <Fluent:Button Icon="/Icons/undo.png" SizeDefinition="Small" ToolTip="Undo"/>
-                    <Fluent:Button Icon="/Icons/redo.png" SizeDefinition="Small"  ToolTip="Redo"/>
+                    <Fluent:Button Name="undoButton" Icon="/Icons/undo.png" SizeDefinition="Small" ToolTip="Undo" Click="undoButton_Click"/>
+                    <Fluent:Button Name="redoButton" Icon="/Icons/redo.png" SizeDefinition="Small"  ToolTip="Redo" Click="redoButton_Click"/>
                     <Fluent:Button SizeDefinition="Small" Visibility="Hidden"/>
-                    <Fluent:Button Icon="/Icons/copy.png" SizeDefinition="Small" ToolTip="Copy"/>
-                    <Fluent:Button Icon="/Icons/cut.png" SizeDefinition="Small" ToolTip="Cut"/>
-                    <Fluent:Button Icon="/Icons/paste.png" SizeDefinition="Small" ToolTip="Paste"/>
-                    <Fluent:Button Icon="/Icons/flip-horizontal.png" SizeDefinition="Small" ToolTip="Flip Horizontal"/>
-                    <Fluent:Button Icon="/Icons/flip-vertical.png" SizeDefinition="Small" ToolTip="Flip Vertical"/>
+                    <Fluent:Button Name="copyButton" Icon="/Icons/copy.png" SizeDefinition="Small" ToolTip="Copy" Click="copyButton_Click"/>
+                    <Fluent:Button Name="cutButton" Icon="/Icons/cut.png" SizeDefinition="Small" ToolTip="Cut" Click="cutButton_Click"/>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Canvas">
                     <Fluent:TextBox Header="Width " Width="100">
