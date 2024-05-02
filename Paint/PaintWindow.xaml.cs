@@ -31,8 +31,10 @@ namespace Paint
     /// <summary>
     /// Interaction logic for PaintWindow.xaml
     /// </summary>
+
     public partial class PaintWindow : RibbonWindow, INotifyPropertyChanged
     {
+
         bool _isDrawing = false;
         Point _start;
         Point _end;
@@ -51,7 +53,7 @@ namespace Paint
         List<IShape> _shapes = new List<IShape>();
 
         List<IShape> _painters = new List<IShape>();
-        IShape _painter = null;
+        IShape? _painter = null;
 
         List<string> _brushes = new();
         DoubleCollection _brush;
@@ -403,7 +405,6 @@ namespace Paint
                 canvas.Children.Add(_painter.Convert());
             }
         }
-
         
         private void shapeGallery_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -857,7 +858,7 @@ namespace Paint
 
             var settings = new JsonSerializerSettings()
             {
-                TypeNameHandling = TypeNameHandling.Objects
+                TypeNameHandling = TypeNameHandling.Objects,
             };
             StringBuilder builder = new();
 
@@ -907,6 +908,8 @@ namespace Paint
                 _painters.Clear();
                 RenderCanvas();
             }
+            _painters.Clear();
+            RenderCanvas();
             OpenImageFile();
         }
         private void OpenImageFile()
@@ -941,7 +944,7 @@ namespace Paint
 
                             var settings = new JsonSerializerSettings()
                             {
-                                TypeNameHandling = TypeNameHandling.Objects
+                                TypeNameHandling = TypeNameHandling.Objects,
                             };
 
                             _painters = JsonConvert.DeserializeObject<List<IShape>>(json, settings);
@@ -958,6 +961,84 @@ namespace Paint
                 }
             }
         }
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Objects,
+            };
+
+            var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
+
+            StringBuilder builder = new();
+            builder.Append(serializedShapeList)
+            .Append('\n')
+            .Append($"{BackgroundImagePath}")
+            .Append('\n')
+            .Append($"{backgroundColor.SelectedColor.ToString()}");
+            string content = builder.ToString();
+
+            var dialog = new System.Windows.Forms.SaveFileDialog
+            {
+                Filter = "JSON (*.json)|*.json"
+            };
+
+            if (savedFilePath != string.Empty && Path.GetExtension(savedFilePath) == ".json")
+            {
+                File.WriteAllText(savedFilePath, content);
+                MessageBox.Show("Saved Successfully");
+            }
+            else
+            {
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string path = dialog.FileName;
+                    savedFilePath = path;
+                    File.WriteAllText(path, content);
+                    MessageBox.Show("Saved Successfully");
+                    IsSaved = true;
+                }
+            }
+        }
+
+        private void Import_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.OpenFileDialog
+            {
+                Filter = "JSON (*.json)|*.json"
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = dialog.FileName;
+                savedFilePath = path;
+
+                string content = File.ReadAllText(path);
+
+                if (!string.IsNullOrEmpty(content))
+                {
+                    string[] lines = content.Split('\n');
+                    string json = lines[0];
+                    string backgroundColorString = lines.Length > 2 ? lines[2] : "";
+
+                    var settings = new JsonSerializerSettings()
+                    {
+                        TypeNameHandling = TypeNameHandling.Objects,
+                    };
+
+                    _painters = JsonConvert.DeserializeObject<List<IShape>>(json, settings);
+
+                    if (!string.IsNullOrEmpty(backgroundColorString))
+                    {
+                        Color backgroundColorFile = (Color)ColorConverter.ConvertFromString(backgroundColorString);
+                        backgroundColor.SelectedColor = backgroundColorFile;
+                    }
+
+                    RenderCanvas();
+                }
+            }
+        }
+
         private void SaveCurrentSession()
         {
             var settings = new JsonSerializerSettings()
@@ -996,89 +1077,6 @@ namespace Paint
             savedFilePath = string.Empty;
             RenderCanvas();
         }
-        private void Export_Click(object sender, RoutedEventArgs e)
-        {
-            var settings = new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.Objects
-            };
-
-            var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
-
-            StringBuilder builder = new();
-            builder.Append(serializedShapeList)
-            .Append('\n')
-            .Append($"{BackgroundImagePath}")
-            .Append('\n')
-            .Append($"{backgroundColor.SelectedColor.ToString()}");
-            string content = builder.ToString();
-
-            var dialog = new System.Windows.Forms.SaveFileDialog
-            {
-                Filter = "JSON (*.json)|*.json"
-            };
-
-            if (savedFilePath != string.Empty && Path.GetExtension(savedFilePath) != ".json")
-            {
-                File.WriteAllText(savedFilePath, content);
-                MessageBox.Show("Saved Successfully");
-            }
-            else
-            {
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    string path = dialog.FileName;
-                    savedFilePath = path;
-                    File.WriteAllText(path, content);
-                    MessageBox.Show("Saved Successfully");
-                    IsSaved = true;
-                }
-            }
-        }
-        private void Import_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new System.Windows.Forms.OpenFileDialog
-            {
-                Filter = "JSON (*.json)|*.json"
-            };
-
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                string path = dialog.FileName;
-                savedFilePath = path;
-
-                string[] content = File.ReadAllLines(path);
-
-                string json = content[0];
-                string background = content.Length > 1 ? content[1] : "";
-                string backgroundColorString = content.Length > 2 ? content[2] : "";
-
-                var settings = new JsonSerializerSettings()
-                {
-                    TypeNameHandling = TypeNameHandling.Objects
-                };
-
-                _painters.Clear();
-                List<IShape> savedShapes = JsonConvert.DeserializeObject<List<IShape>>(json, settings);
-                foreach (var item in savedShapes!)
-                {
-                    _painters.Add(item);
-                }
-
-                if (!string.IsNullOrEmpty(background))
-                {
-                    AddBackground(background);
-                }
-
-                if (!string.IsNullOrEmpty(backgroundColorString))
-                {
-                    Color backgroundColorFile = (Color)ColorConverter.ConvertFromString(backgroundColorString);
-                    backgroundColor.SelectedColor = backgroundColorFile;
-                }
-            }
-
-            RenderCanvas();
-        }
         private void Closing_Click(object sender, CancelEventArgs e)
         {
             if (_painters.Count > 0)
@@ -1099,7 +1097,8 @@ namespace Paint
         {
             var settings = new JsonSerializerSettings()
             {
-                TypeNameHandling = TypeNameHandling.Objects
+                TypeNameHandling = TypeNameHandling.Objects,
+                PreserveReferencesHandling = PreserveReferencesHandling.Objects // Add this line
             };
 
             var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
@@ -1120,7 +1119,8 @@ namespace Paint
                 {
                     var settings = new JsonSerializerSettings()
                     {
-                        TypeNameHandling = TypeNameHandling.Objects
+                        TypeNameHandling = TypeNameHandling.Objects,
+                        PreserveReferencesHandling = PreserveReferencesHandling.Objects // Add this line
                     };
 
                     _painters = JsonConvert.DeserializeObject<List<IShape>>(content[0], settings);

@@ -88,7 +88,7 @@ namespace MyImages
             get { return ImageToBase64(_imgSrc); }
             set { _imgSrc = Base64ToImage(value); }
         }
-        public string ImageToBase64(BitmapSource image)
+        public static string ImageToBase64(BitmapSource image)
         {
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(image));
@@ -105,7 +105,6 @@ namespace MyImages
             var decoder = new PngBitmapDecoder(ms, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
             return decoder.Frames[0];
         }
-
     }
 
 }
