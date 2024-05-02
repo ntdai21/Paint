@@ -6,6 +6,8 @@ using Shapes;
 using System.Windows.Shapes;
 using System.Windows.Media.Imaging;
 using Contract;
+using System.Text.Json.Serialization;
+using System.IO;
 
 namespace MyImages
 {
@@ -74,6 +76,36 @@ namespace MyImages
             rectangle.RenderTransform = transform;
             return rectangle;
         }
+        [JsonIgnore]
+        public BitmapSource ImageSource
+        {
+            get { return _imgSrc; }
+            set { _imgSrc = value; }
+        }
+
+        public string ImageBase64
+        {
+            get { return ImageToBase64(_imgSrc); }
+            set { _imgSrc = Base64ToImage(value); }
+        }
+        public string ImageToBase64(BitmapSource image)
+        {
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+            using var ms = new MemoryStream();
+            encoder.Save(ms);
+            var bytes = ms.ToArray();
+            return System.Convert.ToBase64String(bytes);
+        }
+
+        public static BitmapSource Base64ToImage(string base64)
+        {
+            var bytes = System.Convert.FromBase64String(base64);
+            using var ms = new MemoryStream(bytes);
+            var decoder = new PngBitmapDecoder(ms, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            return decoder.Frames[0];
+        }
+
     }
 
 }

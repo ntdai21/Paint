@@ -862,7 +862,7 @@ namespace Paint
             StringBuilder builder = new();
 
             var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
-            builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}");
+            builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}").Append('\n').Append($"{backgroundColor.SelectedColor.ToString()}");
             string content = builder.ToString();
 
             if (!string.IsNullOrEmpty(savedFilePath))
@@ -909,31 +909,6 @@ namespace Paint
             }
             OpenImageFile();
         }
-
-        private void SaveCurrentSession()
-        {
-            var settings = new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.Objects
-            };
-
-            var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
-
-            StringBuilder builder = new();
-            builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}");
-            string content = builder.ToString();
-
-            var savedialog = new System.Windows.Forms.SaveFileDialog
-            {
-                Filter = "JSON (*.json)|*.json"
-            };
-
-            if (savedialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                string path = savedialog.FileName;
-                File.WriteAllText(path, content);
-            }
-        }
         private void OpenImageFile()
         {
             var dialog = new System.Windows.Forms.OpenFileDialog();
@@ -956,20 +931,55 @@ namespace Paint
 
                     if (metadata != null)
                     {
-                        string json = metadata.GetQuery("/Text/JSON") as string;
+                        string content = metadata.GetQuery("/Text/JSON") as string;
 
-                        if (!string.IsNullOrEmpty(json))
+                        if (!string.IsNullOrEmpty(content))
                         {
+                            string[] lines = content.Split('\n');
+                            string json = lines[0];
+                            string backgroundColorString = lines.Length > 2 ? lines[2] : "";
+
                             var settings = new JsonSerializerSettings()
                             {
                                 TypeNameHandling = TypeNameHandling.Objects
                             };
 
                             _painters = JsonConvert.DeserializeObject<List<IShape>>(json, settings);
+
+                            if (!string.IsNullOrEmpty(backgroundColorString))
+                            {
+                                Color backgroundColorFile = (Color)ColorConverter.ConvertFromString(backgroundColorString);
+                                backgroundColor.SelectedColor = backgroundColorFile;
+                            }
+
                             RenderCanvas();
                         }
                     }
                 }
+            }
+        }
+        private void SaveCurrentSession()
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+
+            var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
+
+            StringBuilder builder = new();
+            builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}").Append('\n').Append($"{backgroundColor.SelectedColor.ToString()}");
+            string content = builder.ToString();
+
+            var savedialog = new System.Windows.Forms.SaveFileDialog
+            {
+                Filter = "JSON (*.json)|*.json"
+            };
+
+            if (savedialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = savedialog.FileName;
+                File.WriteAllText(path, content);
             }
         }
         private void New_Click(object sender, RoutedEventArgs e)
@@ -986,7 +996,6 @@ namespace Paint
             savedFilePath = string.Empty;
             RenderCanvas();
         }
-
         private void Export_Click(object sender, RoutedEventArgs e)
         {
             var settings = new JsonSerializerSettings()
@@ -997,7 +1006,11 @@ namespace Paint
             var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
 
             StringBuilder builder = new();
-            builder.Append(serializedShapeList).Append('\n').Append($"{BackgroundImagePath}");
+            builder.Append(serializedShapeList)
+            .Append('\n')
+            .Append($"{BackgroundImagePath}")
+            .Append('\n')
+            .Append($"{backgroundColor.SelectedColor.ToString()}");
             string content = builder.ToString();
 
             var dialog = new System.Windows.Forms.SaveFileDialog
@@ -1005,7 +1018,7 @@ namespace Paint
                 Filter = "JSON (*.json)|*.json"
             };
 
-            if (savedFilePath != string.Empty || Path.GetExtension(savedFilePath) != ".json")
+            if (savedFilePath != string.Empty && Path.GetExtension(savedFilePath) != ".json")
             {
                 File.WriteAllText(savedFilePath, content);
                 MessageBox.Show("Saved Successfully");
@@ -1017,11 +1030,11 @@ namespace Paint
                     string path = dialog.FileName;
                     savedFilePath = path;
                     File.WriteAllText(path, content);
+                    MessageBox.Show("Saved Successfully");
                     IsSaved = true;
                 }
             }
         }
-
         private void Import_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new System.Windows.Forms.OpenFileDialog
@@ -1036,13 +1049,9 @@ namespace Paint
 
                 string[] content = File.ReadAllLines(path);
 
-                string background = "";
                 string json = content[0];
-
-                if (content.Length > 1)
-                {
-                    background = content[1];
-                }
+                string background = content.Length > 1 ? content[1] : "";
+                string backgroundColorString = content.Length > 2 ? content[2] : "";
 
                 var settings = new JsonSerializerSettings()
                 {
@@ -1060,12 +1069,16 @@ namespace Paint
                 {
                     AddBackground(background);
                 }
+
+                if (!string.IsNullOrEmpty(backgroundColorString))
+                {
+                    Color backgroundColorFile = (Color)ColorConverter.ConvertFromString(backgroundColorString);
+                    backgroundColor.SelectedColor = backgroundColorFile;
+                }
             }
 
             RenderCanvas();
         }
-
-
         private void Closing_Click(object sender, CancelEventArgs e)
         {
             if (_painters.Count > 0)
@@ -1073,7 +1086,8 @@ namespace Paint
                 MessageBoxResult result = MessageBox.Show("Do you want to save your work for the next session?", "Save work", MessageBoxButton.YesNo);
                 if (result == MessageBoxResult.Yes)
                 {
-                    SaveShapesToXml("data.xml");
+                    Color backgroundColor = ((SolidColorBrush)canvas.Background).Color;
+                    SaveShapesToXml("data.xml", backgroundColor);
                 }
                 else
                 {
@@ -1081,8 +1095,7 @@ namespace Paint
                 }
             }
         }
-
-        private void SaveShapesToXml(string filename)
+        private void SaveShapesToXml(string filename, Color backgroundColor)
         {
             var settings = new JsonSerializerSettings()
             {
@@ -1091,43 +1104,49 @@ namespace Paint
 
             var serializedShapeList = JsonConvert.SerializeObject(_painters, settings);
 
-            File.WriteAllText(filename, serializedShapeList);
-        }
+            StringBuilder builder = new StringBuilder();
+            builder.Append(serializedShapeList)
+                   .Append('\n')
+                   .Append($"{backgroundColor.ToString()}");
 
+            File.WriteAllText(filename, builder.ToString());
+        }
         private void LoadShapesFromXml(string filename)
         {
             if (File.Exists(filename))
             {
-                string content = File.ReadAllText(filename);
-                if (content != "No")
+                string[] content = File.ReadAllLines(filename);
+                if (content[0] != "No")
                 {
                     var settings = new JsonSerializerSettings()
                     {
                         TypeNameHandling = TypeNameHandling.Objects
                     };
 
-                    _painters = JsonConvert.DeserializeObject<List<IShape>>(content, settings);
+                    _painters = JsonConvert.DeserializeObject<List<IShape>>(content[0], settings);
+
+                    if (content.Length > 1)
+                    {
+                        Color backgroundColorFile = (Color)ColorConverter.ConvertFromString(content[1]);
+                        backgroundColor.SelectedColor = backgroundColorFile;
+                    }
+
                     RenderCanvas();
                 }
             }
         }
-
-
         private void cutButton_Click(object sender, RoutedEventArgs e)
         {
             HandleCutEvent();
         }
-
         private void copyButton_Click(object sender, RoutedEventArgs e)
         {
             HandleCopyEvent();
         }
-
         private void redoButton_Click(object sender, RoutedEventArgs e)
         {
             HandleRedoEvent();
         }
-
         private void undoButton_Click(object sender, RoutedEventArgs e)
         {
             HandleUndoEvent();

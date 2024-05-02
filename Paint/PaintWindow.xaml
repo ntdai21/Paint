@@ -63,7 +63,7 @@
                             </Binding>
                         </Fluent:TextBox.Text>
                     </Fluent:TextBox>
-                    <Fluent:DropDownButton Header="Background">
+                    <Fluent:DropDownButton Header="Background" Height="68" VerticalAlignment="Top">
                         <Fluent:DropDownButton.Icon>
                             <Ellipse Fill="{Binding ElementName=backgroundColor, Path=SelectedColor, Converter={StaticResource colorToBrushConverter}}"/>
                         </Fluent:DropDownButton.Icon>
