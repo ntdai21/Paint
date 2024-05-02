@@ -63,12 +63,18 @@ namespace Paint
         public bool IsSaved { get; set; } = false;
         private string savedFilePath = string.Empty;
 
+        private WriteableBitmap buffer;
+        private Image image;
+
         public PaintWindow()
         {
             InitializeComponent();
             KeyDown += Canvas_PreviewKeyDown;
             DataContext = this;
+
         }
+
+
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -149,7 +155,13 @@ namespace Paint
             }
 
         }
-      
+
+        private void AddPreviewToCanvas()
+        {
+            previewCanvas.Children.Clear();
+            previewCanvas.Children.Add(_painter.Convert());
+        }
+
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (!_isEdit)
@@ -251,16 +263,17 @@ namespace Paint
             {
                 _end = e.GetPosition(canvas);
 
-                canvas.Children.Clear();
-
+                /*canvas.Children.Clear();
                 foreach (IShape i in _painters)
                 {
                     canvas.Children.Add(i.Convert());
-                }
+                }*/
+
 
                 _painter.AddFirst(_start);
                 _painter.AddSecond(_end);
-                canvas.Children.Add(_painter.Convert());
+                //canvas.Children.Add(_painter.Convert());
+                AddPreviewToCanvas();
             }
             else if (cursorToggle.IsChecked == true)
             {
@@ -386,6 +399,8 @@ namespace Paint
                 AddToUndo(_painters);
                 _selectedControlPointIndex = -1;
 
+                previewCanvas.Children.Clear();
+                canvas.Children.Add(_painter.Convert());
             }
         }
 
@@ -472,8 +487,16 @@ namespace Paint
 
         private void HandlePasteEvent(Point cursor)
         {
-            
-            if (_isEdit && _copyBuffer.Count > 0)
+
+            if (Clipboard.GetImage() != null)
+            {
+                _painters.Add((IShape)new MyImage(Clipboard.GetImage()));
+                Clipboard.Clear();
+                AddToUndo(_painters);
+                _selectedControlPointIndex = -1;
+                RenderCanvas();
+            }
+            else if (_isEdit && _copyBuffer.Count > 0)
             {
                 AddToUndo(_painters);
 
@@ -526,13 +549,7 @@ namespace Paint
 
                 _currentCursor = newCursor;
             }
-            else if (Clipboard.GetImage() != null)
-            {
-                _painters.Add((IShape)new MyImage(Clipboard.GetImage()));
-                AddToUndo(_painters);
-                _selectedControlPointIndex = -1;
-                RenderCanvas();
-            }
+            
 
         }
 
@@ -1082,5 +1099,27 @@ namespace Paint
             }
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AddImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.OpenFileDialog
+            {
+                Filter = "PNG (*.png)|*.png| JPEG (*.jpeg)|*.jpeg| BMP (*.bmp)|*.bmp | TIFF (*.tiff)|*.tiff"
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = dialog.FileName;
+
+                _painters.Add((IShape)new MyImage(new BitmapImage(new Uri(path, UriKind.Absolute))));
+                AddToUndo(_painters);
+                _selectedControlPointIndex = -1;
+                RenderCanvas();
+            }
+        }
     }
 }
