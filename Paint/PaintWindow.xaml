@@ -129,6 +129,7 @@
                 <Grid.LayoutTransform>
                     <ScaleTransform ScaleX="{Binding ElementName=zoomSlider, Path=Value}" ScaleY="{Binding ElementName=zoomSlider, Path=Value}"/>
                 </Grid.LayoutTransform>
+
                 <Canvas x:Name="canvas" Background="{Binding ElementName=backgroundColor, Path=SelectedColor, Converter={StaticResource colorToBrushConverter}}"/>
                 <Canvas x:Name="previewCanvas" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp"/>
             </Grid>

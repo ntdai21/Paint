@@ -177,6 +177,8 @@ namespace Paint
                 _painter.FillColor = fillColorGallery.SelectedColor ?? Colors.Transparent;
                 _painter.StrokeThickness = strokeThicknessSlider.Value;
                 _painter.StrokeDashArray = _brush;
+
+                previewCanvas.CaptureMouse();
             }
 
 
@@ -265,23 +267,19 @@ namespace Paint
             {
                 _end = e.GetPosition(canvas);
 
-                /*canvas.Children.Clear();
-                foreach (IShape i in _painters)
-                {
-                    canvas.Children.Add(i.Convert());
-                }*/
+                //canvas.Children.Clear();
+                //foreach (IShape i in _painters)
+                //{
+                    //canvas.Children.Add(i.Convert());
+                //}
 
 
                 _painter.AddFirst(_start);
                 _painter.AddSecond(_end);
                 //canvas.Children.Add(_painter.Convert());
-                AddPreviewToCanvas();
+                previewCanvas.Children.Clear();
+                previewCanvas.Children.Add(_painter.Convert());
             }
-            else if (cursorToggle.IsChecked == true)
-            {
-
-            }
-
 
             if (_isEdit)
             {
@@ -403,6 +401,8 @@ namespace Paint
 
                 previewCanvas.Children.Clear();
                 canvas.Children.Add(_painter.Convert());
+
+                previewCanvas.ReleaseMouseCapture();
             }
         }
         
